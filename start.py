@@ -1,6 +1,8 @@
 import slixmpp
 import logging
 import asyncio
+import msgpack
+
 import secrets
 
 
@@ -16,26 +18,39 @@ class EchoBot(slixmpp.ClientXMPP):
         self.get_roster()
 
     def message(self, msg):
-        print(msg)
+        #print(msg)
+        pass
 
 
 async def handle_echo(reader, writer):
-    # message = ''
-    # while not reader.at_eof():
     data = await reader.read()
-    logging.warn('msg from: {0}, data: {1}'.format(
-        writer.get_extra_info('peername'),
-        data.decode(),
+    addr = writer.get_extra_info('peername')
+    logging.warn('msg from: {0}, len(data): {1}'.format(
+        addr,
+        len(data),
     ))
 
     # Just to be sure...
     writer.close()
-    # # Send a message.
-    # xmpp.send_message(
-    #     mto='patches@hive.nullcorp.org',
-    #     mtype='chat',
-    #     mbody=message[-10:]
-    # )
+
+    # Unpack the data
+    try:
+        if len(data) > 0:
+            # Unpack the data
+            data = msgpack.unpackb(data)
+
+            # Send the message.
+            if data[b'type'] == b'message':
+                # Send a message.
+                xmpp.send_message(
+                    mto=data[b'to'].decode(),
+                    mtype='chat',
+                    mbody=data[b'msg'].decode()
+                )
+
+    except msgpack.exceptions.UnpackValueError as e:
+        # Something went wrong, likely an empty message.
+        logging.error('Failed to unpack: {}'.format(e))
 
 
 if __name__ == '__main__':
