@@ -49,7 +49,6 @@ if __name__ == '__main__':
         secrets.auth['xmpppass']
     )
 
-    xmpp.loop.debug = 1
     # Add a TCP listener to the bots loop.
     xmpp.loop.run_until_complete(
         asyncio.start_server(
