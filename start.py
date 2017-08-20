@@ -1,9 +1,8 @@
 import slixmpp
 import logging
 import asyncio
+import aiofiles
 import msgpack
-
-import secrets
 
 
 class EchoBot(slixmpp.ClientXMPP):
@@ -36,17 +35,16 @@ async def handle_echo(reader, writer):
     # Unpack the data
     try:
         if len(data) > 0:
-            # Unpack the data
-            data = msgpack.unpackb(data)
+            data = msgpack.unpackb(data, encoding='utf-8')
 
             # Send the message.
-            if data[b'type'] == b'message':
-                # Send a message.
-                xmpp.send_message(
-                    mto=data[b'to'].decode(),
-                    mtype='chat',
-                    mbody=data[b'msg'].decode()
-                )
+            # if data['type'] == 'message':
+            #     # Send a message.
+            #     xmpp.send_message(
+            #         mto=data['to'],
+            #         mtype='chat',
+            #         mbody=data['msg']
+            #     )
 
     except msgpack.exceptions.UnpackValueError as e:
         # Something went wrong, likely an empty message.
@@ -58,10 +56,13 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO,
                         format='%(levelname)-8s %(message)s')
 
+    with open('secrets', 'rb') as secret:
+        authsecrets = msgpack.unpackb(secret.read(), encoding='utf-8')
+
     # Build the bot object. Also has a loop exposed at obj.loop
     xmpp = EchoBot(
-        secrets.auth['xmppuser'],
-        secrets.auth['xmpppass']
+        authsecrets['xmppuser'],
+        authsecrets['xmpppass']
     )
 
     # Add a TCP listener to the bots loop.
