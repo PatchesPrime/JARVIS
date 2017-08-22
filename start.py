@@ -1,7 +1,6 @@
 import slixmpp
 import logging
 import asyncio
-import aiofiles
 import msgpack
 
 
@@ -38,13 +37,11 @@ async def handle_echo(reader, writer):
             data = msgpack.unpackb(data, encoding='utf-8')
 
             # Send the message.
-            # if data['type'] == 'message':
-            #     # Send a message.
-            #     xmpp.send_message(
-            #         mto=data['to'],
-            #         mtype='chat',
-            #         mbody=data['msg']
-            #     )
+            xmpp.send_message(
+                mto=data['to'],
+                mtype='chat',
+                mbody=data['msg']
+            )
 
     except msgpack.exceptions.UnpackValueError as e:
         # Something went wrong, likely an empty message.
