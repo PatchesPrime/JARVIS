@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[packages]
+slixmpp = "*"
+msgpack-python = "*"
+requests = "*"
+pymongo = "*"
+
+[dev-packages]
+jedi = "*"
+rope = "*"
+importmagic = "*"
+autopep8 = "*"
+flake8 = "*"
