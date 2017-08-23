@@ -129,9 +129,6 @@ if __name__ == '__main__':
 
                 for alert in data:
                     if alert['properties']['id'] not in ids:
-                        # It's new, do it.
-                        db.alerts.insert_one(alert)
-
                         # Connect to socket.
                         # Also, the things I do for <79 char.
                         sock = socket.socket(
@@ -139,6 +136,10 @@ if __name__ == '__main__':
                         )
                         sock.connect(('localhost', 8888))
 
+                        # It's new, do it.
+                        db.alerts.insert_one(alert)
+
+                        # Build a payload for Jarvis.
                         if alert['properties']['severity'] in sub['filter']:
                             payload = {
                                 'to': sub['user'],
@@ -147,5 +148,7 @@ if __name__ == '__main__':
                                     alert['properties']['description']
                                 )
                             }
+
+                        # Send said payload.
                         sock.send(msgpack.packb(payload))
                         sock.close()
