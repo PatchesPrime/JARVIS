@@ -79,7 +79,7 @@ def getSAMECode(place):
                     raise KeyError('Couldn\'t get your county..')
 
 
-def sendWeather(zipcode):
+def getWeather(zipcode):
     '''
     Give it a postal code and it'll give you JSON representing the weather
     for that postcode.
