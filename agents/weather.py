@@ -118,7 +118,7 @@ if __name__ == '__main__':
         for sub in db.subscribers.find({}):
             # TODO: make this async to speed it up, or thread.
             for location in sub['postcode']:
-                data = sendWeather(location)
+                data = getWeather(location)
 
                 # Skip if there is no data.
                 if len(data) is 0:
