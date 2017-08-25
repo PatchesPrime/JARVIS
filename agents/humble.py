@@ -40,12 +40,24 @@ if __name__ == '__main__':
         # Get the current freebies just once.
         free_games = humbleScrape()
 
-        if len(free_games) > 0:
+        if free_games:
             store = 'https://www.humblebundle.com/store/'
 
             # Time to go over subscribers
             for sub in db.subscribers.find({}):
                 for game in free_games:
+                    # Locate all known previous sales matching current
+                    # game for skipping logic.
+                    known_sales = db.games.find(
+                        {'human_url': game['human_url'],
+                         'sale_end': game['sale_end']}
+                    )
+
+                    # Are there any known sales of this game?
+                    if known_sales.count():
+                        # They're the same sale.
+                        continue
+
                     # Currently we force a disconnect after
                     # receiving a message so we must connect
                     # for each one. This is likely to change.
@@ -67,3 +79,5 @@ if __name__ == '__main__':
                     # Send said payload.
                     sock.send(msgpack.packb(payload))
                     sock.close()
+
+                    db.games.insert_one(game)
