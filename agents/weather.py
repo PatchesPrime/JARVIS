@@ -35,8 +35,13 @@ def getSAMECode(place):
         with session.get(geocodeAPI, params=payload) as response:
             request = response.json()
 
-        # THERE WILL BE ONLY 79 CHARACTERS
-        comps = request['results'][0]['address_components']
+        try:
+            # THERE WILL BE ONLY 79 CHARACTERS
+            comps = request['results'][0]['address_components']
+        except KeyError as e:
+            # Occasionally the Google Geocode API randomly doesn't
+            # return anything. One day I'll know why.
+            logging.warn('IndexError: {}'.format(e))
 
         # Forgive me padre for I have sinned.
         types = {y for x in comps for y in x['types']}
