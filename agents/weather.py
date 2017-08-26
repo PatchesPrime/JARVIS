@@ -42,6 +42,7 @@ def getSAMECode(place):
             # Occasionally the Google Geocode API randomly doesn't
             # return anything. One day I'll know why.
             logging.warn('IndexError: {}'.format(e))
+            return None
 
         # Forgive me padre for I have sinned.
         types = {y for x in comps for y in x['types']}
@@ -70,7 +71,13 @@ def getSAMECode(place):
             with session.get(geocodeAPI, params=payload) as response:
                 request = response.json()
 
-                for com in request['results'][0]['address_components']:
+                try:
+                    comp = request['results'][0]['address_components']
+                except IndexError as e:
+                    logging.warn('IndexError: {}'.format(e))
+                    return None
+
+                for com in comp:
                     if 'administrative_area_level_2' in com['types']:
                         county = com['long_name'][:-7]
 
@@ -100,6 +107,10 @@ def getWeather(zipcode):
 
     # Request it once.
     same = getSAMECode(zipcode)
+
+    if not same:
+        # Same is none, lets just fail. Google..pls.
+        return []
 
     # Seriously forgive me padre, pls.
     return [x for x in request
