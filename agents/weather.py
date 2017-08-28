@@ -2,6 +2,7 @@ import msgpack
 import requests
 import socket
 import pymongo
+import logging
 
 
 def loadAuth(filename):
