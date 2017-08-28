@@ -35,7 +35,7 @@ def getSAMECode(place):
         try:
             # THERE WILL BE ONLY 79 CHARACTERS
             comps = request['results'][0]['address_components']
-        except KeyError as e:
+        except IndexError as e:
             # Occasionally the Google Geocode API randomly doesn't
             # return anything. One day I'll know why.
             logging.warn('IndexError: {}'.format(e))
