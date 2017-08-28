@@ -142,18 +142,19 @@ if __name__ == '__main__':
 
                 for alert in data:
                     if alert['properties']['id'] not in ids:
-                        # Connect to socket.
-                        # Also, the things I do for <79 char.
-                        sock = socket.socket(
-                            socket.AF_INET, socket.SOCK_STREAM
-                        )
-                        sock.connect(('localhost', 8888))
-
                         # It's new, do it.
                         db.alerts.insert_one(alert)
 
                         # Build a payload for Jarvis.
                         if alert['properties']['severity'] in sub['filter']:
+                            # Connect to socket.
+                            # Also, the things I do for <79 char.
+                            sock = socket.socket(
+                                socket.AF_INET, socket.SOCK_STREAM
+                            )
+                            sock.connect(('localhost', 8888))
+
+                            # Build the payload.
                             payload = {
                                 'to': sub['user'],
                                 'msg': (
