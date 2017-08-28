@@ -17,10 +17,7 @@ def getSAMECode(place):
     Get the SAME code for a given place. Trys to make it work
     yet probably wont.
 
-    NOTE: this function is stupid and should be cleansed with
-    the most holy of fires. Recursive method calling, really?
-
-    Set a reasonable recursion limit.
+    It's an ugly method. I should rewrite it.
     '''
     authsecrets = loadAuth('../secrets')
     with open('same.codes', 'rb') as same_codes:
