@@ -162,6 +162,6 @@ if __name__ == '__main__':
                                 )
                             }
 
-                        # Send said payload.
-                        sock.send(msgpack.packb(payload))
+                            # Send said payload.
+                            sock.send(msgpack.packb(payload))
                         sock.close()
