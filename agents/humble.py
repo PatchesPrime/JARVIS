@@ -19,8 +19,12 @@ def humbleScrape():
                 # Not very clean but it should do. Chop off 'page: '.
                 shop = json.loads(line[12:-1])['entity_lookup_dict']
 
-        freebies = [item for item in shop.values()
-                    if item['type'] != 'page' and 0.0 in item['current_price']]
+        # The things I do for 79 characters.
+        freebies = [
+            item for item in shop.values()
+            if 'current_price' in item.keys() and 0.0 in item['current_price']
+        ]
+
 
         return freebies
 
