@@ -8,6 +8,7 @@ msgpack-python = "*"
 requests = "*"
 pymongo = "*"
 aiohttp = "*"
+motor = "*"
 
 [dev-packages]
 jedi = "*"
