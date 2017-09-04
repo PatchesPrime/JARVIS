@@ -151,7 +151,7 @@ if __name__ == '__main__':
     # Add a TCP listener to the bots loop.
     xmpp.loop.run_until_complete(
         asyncio.start_server(
-            handle_echo, 'localhost', 8888
+            handle_echo, '192.168.1.200', 8888
         )
     )
 
