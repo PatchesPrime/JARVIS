@@ -25,7 +25,6 @@ def humbleScrape():
             if 'current_price' in item.keys() and 0.0 in item['current_price']
         ]
 
-
         return freebies
 
 
