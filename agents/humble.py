@@ -83,4 +83,4 @@ if __name__ == '__main__':
                 sock.send(msgpack.packb(payload))
                 sock.close()
 
-                db.games.insert_one(game)
+        db.games.insert(free_games)
