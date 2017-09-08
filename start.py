@@ -20,6 +20,8 @@ class EchoBot(slixmpp.ClientXMPP):
             'register_user': commands.registerUser.__doc__,
             'delete_user': commands.deleteUser.__doc__,
             'update_user': commands.updateUser.__doc__,
+            'add_sub': commands.addSubscriber.__doc__,
+            'del_sub': commands.deleteSubscriber.__doc__,
         }
 
         with open('secrets', 'rb') as secrets:
