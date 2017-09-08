@@ -108,7 +108,7 @@ class EchoBot(slixmpp.ClientXMPP):
                     await commands.addSubscriber(self.db, args[0], args[1:])
                 )).send()
             else:
-                msg.send(self.usable_functions[cmd]).send()
+                msg.reply(self.usable_functions[cmd]).send()
 
         elif cmd == 'del_sub':
             if len(args) == 1:
@@ -118,7 +118,7 @@ class EchoBot(slixmpp.ClientXMPP):
                     args[0]
                 )).send()
             else:
-                msg.send(self.usable_functions[cmd]).send()
+                msg.reply(self.usable_functions[cmd]).send()
 
         else:
             end = "My available commands, sir:\n"
