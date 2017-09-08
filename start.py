@@ -4,7 +4,7 @@ import asyncio
 import msgpack
 import json
 from datetime import datetime
-import pymongo
+import motor.motor_asyncio
 import commands
 
 
@@ -27,7 +27,7 @@ class EchoBot(slixmpp.ClientXMPP):
             authsecrets = msgpack.unpackb(secrets.read(), encoding='utf-8')
 
             # Now we use our authentication.
-            mongo = pymongo.MongoClient()
+            mongo = motor.motor_asyncio.AsyncIOMotorClient()
 
             # Assign and authenticate.
             self.db = mongo.bot
@@ -98,6 +98,15 @@ class EchoBot(slixmpp.ClientXMPP):
                     msg.reply('Updated the user, sir.').send()
                 else:
                     msg.reply('Forgive me, but there was an error..').send()
+
+        elif cmd == 'add_sub':
+            if len(args) >= 2:
+                logging.debug('Adding sub with {}'.format(args))
+                msg.reply('Added subscriber with unique ID: {}'.format(
+                    await commands.addSubscriber(self.db, args[0], args[1:])
+                )).send()
+            else:
+                msg.send(usable_functions[cmd]).send()
 
         else:
             end = "My available commands, sir:\n"
