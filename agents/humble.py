@@ -83,4 +83,13 @@ if __name__ == '__main__':
                 sock.send(msgpack.packb(payload))
                 sock.close()
 
-        db.games.insert(free_games)
+        # Insert each game. If it exists in DB, just update sale_end
+        for game in free_games:
+            db.games.update_one(
+                {'human_url': game['human_url']},
+                {'$set': {
+                    'sale_end': game['sale_end'],
+                    'human_name': game['human_name']
+                }},
+                upsert=True
+            )
