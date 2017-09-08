@@ -59,12 +59,12 @@ async def addSubscriber(db, user, postcode):
     return result.inserted_id
 
 
-def deleteSubscriber(db, user):
+async def deleteSubscriber(db, user):
     '''
     Delete a subscriber from my MongoDB for notable weather alerts.
     USAGE: del_sub user@host
     '''
-    result = db.subscribers.delete_one(
+    result = await db.subscribers.delete_one(
         {
             'user': str(user)
         }
