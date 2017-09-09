@@ -8,7 +8,7 @@ import motor.motor_asyncio
 import commands
 
 
-class EchoBot(slixmpp.ClientXMPP):
+class JARVIS(slixmpp.ClientXMPP):
     def __init__(self, jid, password):
         slixmpp.ClientXMPP.__init__(self, jid, password)
 
@@ -63,7 +63,7 @@ class EchoBot(slixmpp.ClientXMPP):
         # Command processing.
         if cmd == 'register_user':
             if len(args) >= 2:
-                req = await asyncio.ensure_future(commands.registerUser(*args))
+                req = await commands.registerUser(*args)
                 if req == 201:
                     msg.reply('Registered the requested user, sir.').send()
                 else:
@@ -71,7 +71,7 @@ class EchoBot(slixmpp.ClientXMPP):
 
         elif cmd == 'delete_user':
             if len(args) == 1:
-                req = await asyncio.ensure_future(commands.deleteUser(args[0]))
+                req = await commands.deleteUser(args[0])
                 if req == 200:
                     msg.reply('Removed {0}\'s credentials, sir.'.format(
                         args[0])).send()
@@ -95,7 +95,7 @@ class EchoBot(slixmpp.ClientXMPP):
                     return
 
                 # Otherwise, process the command.
-                req = await asyncio.ensure_future(commands.updateUser(args[0], args_payload))
+                req = await commands.updateUser(args[0], args_payload)
                 if req == 200:
                     msg.reply('Updated the user, sir.').send()
                 else:
@@ -164,7 +164,7 @@ if __name__ == '__main__':
         authsecrets = msgpack.unpackb(secret.read(), encoding='utf-8')
 
     # Build the bot object. Also has a loop exposed at obj.loop
-    xmpp = EchoBot(
+    xmpp = JARVIS(
         authsecrets['xmppuser'],
         authsecrets['xmpppass']
     )
