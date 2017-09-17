@@ -58,7 +58,16 @@ class JARVIS(slixmpp.ClientXMPP):
         casted_msg['date'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Store it.
-        self.db.messages.insert_one(casted_msg)
+        await self.db.messages.insert_one(casted_msg)
+
+        # Async List Comprehensions and PEP8 formatting
+        admin = [
+            x['user'] async for x in self.db.subscribers.find({'admin': True})
+        ]
+
+        if msg['from'].bare not in admin:
+            return
+
 
         # Command processing.
         if cmd == 'register_user':
