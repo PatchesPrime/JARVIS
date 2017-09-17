@@ -73,7 +73,7 @@ class JARVIS(slixmpp.ClientXMPP):
         await self.db.messages.insert_one(casted_msg)
 
         # Command processing.
-        if cmd == 'register_user':
+        if cmd == 'register_user' and await self._isAdmin(msg['from'].bare):
             if len(args) >= 2:
                 req = await commands.registerUser(*args)
                 if req == 201:
@@ -81,7 +81,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 else:
                     msg.reply('Apologies, but there was an error.').send()
 
-        elif cmd == 'delete_user':
+        elif cmd == 'delete_user' and await self._isAdmin(msg['from'].bare):
             if len(args) == 1:
                 req = await commands.deleteUser(args[0])
                 if req == 200:
@@ -90,7 +90,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 else:
                     msg.reply('Apologies, sir; an error has occured..').send()
 
-        elif cmd == 'update_user':
+        elif cmd == 'update_user' and await self._isAdmin(msg['from'].bare):
             if len(args) >= 1:
                 # Build a payload out of the arguments list in JSON.
                 try:
@@ -113,16 +113,23 @@ class JARVIS(slixmpp.ClientXMPP):
                 else:
                     msg.reply('Forgive me, but there was an error..').send()
 
-        elif cmd == 'add_sub':
-            if len(args) >= 2:
+        elif cmd == 'add_sub' and await self._isAdmin(msg['from'].bare):
+            if len(args) == 1:
                 logging.debug('Adding sub with {}'.format(args))
                 msg.reply('Added subscriber with unique ID: {}'.format(
-                    await commands.addSubscriber(self.db, args[0], args[1:])
+                    await commands.addSubscriber(self.db, args[0])
+                )).send()
+            elif len(args) >= 2:
+                kwargs = json.loads(''.join(args[1:]))
+                logging.debug('Adding sub with kwargs: {}'.format(kwargs))
+
+                msg.reply('Added subscriber with unique ID: {}'.format(
+                    await commands.addSubscriber(self.db, args[0], **kwargs)
                 )).send()
             else:
                 msg.reply(self.usable_functions[cmd]).send()
 
-        elif cmd == 'del_sub':
+        elif cmd == 'del_sub' and await self._isAdmin(msg['from'].bare):
             if len(args) == 1:
                 logging.debug('Removing sub {}'.format(args))
                 msg.reply('Removed {} matching "{}"'.format(
@@ -169,7 +176,7 @@ async def handle_echo(reader, writer):
 
 if __name__ == '__main__':
     # Setup logging.
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.DEBUG,
                         format='%(levelname)-8s %(message)s')
 
     with open('secrets', 'rb') as secret:
