@@ -176,7 +176,7 @@ async def handle_echo(reader, writer):
 
 if __name__ == '__main__':
     # Setup logging.
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format='%(levelname)-8s %(message)s')
 
     with open('secrets', 'rb') as secret:
