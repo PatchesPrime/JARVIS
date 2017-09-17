@@ -39,19 +39,29 @@ async def runREST(httptype, endpoint, payload=None):
             return None
 
 
-async def addSubscriber(db, user, postcode):
+async def addSubscriber(db, user, postcode=None, weather_filter=None, admin=False):
     '''
     Add a subscriber to my MongoDB for notable weather alerts.
-    USAGE: add_sub user@host zipcode zipcode1 zipcode2 etc
-    '''
+    USAGE: add_sub user@host
+    USAGE: add_sub user@host add_sub test@test {"admin": true}
 
-    if type(postcode) is not list:
-        raise TypeError('addSubscriber takes a list as second argument.')
+    NOTE: valid JSON attributes:
+        'postcode': ['zipcode1', 'zipcode2']
+        'weather_filter': ['Severe', 'Unknown']
+        'admin': false
+    '''
+    if postcode is None:
+        postcode = []
+
+    if weather_filter is None:
+        weather_filter = []
 
     result = await db.subscribers.insert_one(
         {
-            'user': str(user),
-            'postcode': postcode
+            'user': user,
+            'postcode': list(postcode),
+            'filter': list(weather_filter),
+            'admin': admin
         }
     )
 
