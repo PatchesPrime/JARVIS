@@ -39,6 +39,18 @@ class JARVIS(slixmpp.ClientXMPP):
         self.send_presence()
         self.get_roster()
 
+    async def _isAdmin(self, user):
+        # Async List Comprehensions and PEP8 formatting
+        admin = [
+            x['user'] async for x in self.db.subscribers.find({'admin': True})
+        ]
+
+        # This method is meant to be used in an if, so..
+        if user in admin:
+            return True
+        else:
+            return False
+
     async def message(self, msg):
         # huehue
         (cmd, args) = (msg['body'].split()[0].lower(), msg['body'].split()[1:])
@@ -59,15 +71,6 @@ class JARVIS(slixmpp.ClientXMPP):
 
         # Store it.
         await self.db.messages.insert_one(casted_msg)
-
-        # Async List Comprehensions and PEP8 formatting
-        admin = [
-            x['user'] async for x in self.db.subscribers.find({'admin': True})
-        ]
-
-        if msg['from'].bare not in admin:
-            return
-
 
         # Command processing.
         if cmd == 'register_user':
