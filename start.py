@@ -37,9 +37,12 @@ class JARVIS(slixmpp.ClientXMPP):
             self.db = mongo.bot
             self.db.authenticate(authsecrets['mongo_user'], authsecrets['mongo_pass'])
 
-    def start(self, event):
+    async def start(self, event):
         self.send_presence()
         self.get_roster()
+
+        # Add our agents to the loop. Also I feel a little dirty doing this.
+        await self._humble()
 
     async def _isAdmin(self, user):
         # Async List Comprehensions and PEP8 formatting
@@ -107,6 +110,7 @@ class JARVIS(slixmpp.ClientXMPP):
                     await asyncio.sleep(0)
 
             # Acts sort of like a timer.
+            logging.debug('Passing back to loop')
             await asyncio.sleep((60*60)*5)
 
 
