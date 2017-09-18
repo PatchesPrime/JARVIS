@@ -5,7 +5,9 @@ import msgpack
 import json
 from datetime import datetime
 import motor.motor_asyncio
+import socket
 import commands
+from agents.humble import humbleScrape
 
 
 class JARVIS(slixmpp.ClientXMPP):
@@ -50,6 +52,52 @@ class JARVIS(slixmpp.ClientXMPP):
             return True
         else:
             return False
+
+    async def _humble(self):
+        free_games = await humbleScrape()
+
+        if free_games:
+            store = 'https://humblebundle.com/store/'
+
+            # Async finding of subs.
+            async for sub in self.db.subscribers.find({}):
+                for game in free_games:
+                    pattern = {
+                        'human_url': game['human_url'],
+                        'sale_end': game['sale_end']
+                    }
+
+                    # Have we seen this sale?
+                    if await self.db.subscribers.find_one(pattern):
+                        # Skip this game.
+                        continue
+
+
+                    # PEP8 is responsible for this. I just can't help myself.
+                    self.send_message(
+                        mto=sub['user'],
+                        mtype='chat',
+                        mbody='FREE GAME: {}\n{}{}'.format(
+                            game['human_name'], store, game['human_url']
+                        )
+                    )
+
+                    # Just in case something needs the loop
+                    await asyncio.sleep(0)
+
+            for game in free_games:
+                self.db.games.update_one(
+                    {'human_url': game['human_url']},
+                    {'$set': {'sale_end': game['sale_end'],
+                              'human_name': game['human_name']
+                    }},
+                    upsert=True
+                )
+
+                # Same as above.
+                await asyncio.sleep(0)
+
+
 
     async def message(self, msg):
         # huehue
