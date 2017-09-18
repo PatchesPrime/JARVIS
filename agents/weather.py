@@ -1,37 +1,41 @@
 import msgpack
-import requests
-import socket
-import pymongo
 import logging
+import json
+import asyncio
+import aiohttp
+from concurrent.futures import ThreadPoolExecutor
+from os.path import expanduser
 
 
-def loadAuth(filename):
-    with open('../secrets', 'rb') as secrets:
-        # We need our authentication.
-        authsecrets = msgpack.unpackb(secrets.read(), encoding='utf-8')
+async def readfile(filename, loop=None):
+    if loop is None:
+        loop = asyncio.get_event_loop()
 
-        return authsecrets
+    with open(filename, 'rb') as data:
+        io_pool = ThreadPoolExecutor()
+        obj = await loop.run_in_executor(io_pool, data.read)
+        return msgpack.unpackb(obj, encoding='utf-8')
 
 
-def getSAMECode(place):
+async def getSAMECode(place):
     '''
     Get the SAME code for a given place. Trys to make it work
     yet probably wont.
 
     It's an ugly method. I should rewrite it.
     '''
-    authsecrets = loadAuth('../secrets')
-    with open('same.codes', 'rb') as same_codes:
-        codes = msgpack.unpackb(same_codes.read(), encoding='utf-8')
+    # We need this information. They technically run in another thread.
+    authsecrets = await readfile(expanduser('~/projects/JARVIS/secrets'))
+    codes = await readfile(expanduser('~/projects/JARVIS/agents/same.codes'))
 
-    with requests.Session() as session:
+    async with aiohttp.ClientSession() as session:
         # We need to do this first.
         geocodeAPI = 'https://maps.googleapis.com/maps/api/geocode/json'
 
         # Build the payload and request it..
         payload = {'address': place, 'key': authsecrets['geocode_key']}
-        with session.get(geocodeAPI, params=payload) as response:
-            request = response.json()
+        async with session.get(geocodeAPI, params=payload) as response:
+            request = await response.json()
 
         try:
             # THERE WILL BE ONLY 79 CHARACTERS
@@ -43,7 +47,17 @@ def getSAMECode(place):
             return None
 
         # Forgive me padre for I have sinned.
-        types = {y for x in comps for y in x['types']}
+        # types = {y for x in comps for y in x['types']}
+        types = set()
+        for comp in comps:
+            for attrib in comp['types']:
+                types.add(attrib)
+
+                # I baby this loop.
+                await asyncio.sleep(0)
+
+            # srsly
+            await asyncio.sleep(0)
 
         # PEP8 pls
         if 'administrative_area_level_2' in types:
@@ -54,6 +68,9 @@ def getSAMECode(place):
                 elif 'administrative_area_level_1' in com['types']:
                     state = ', {}'.format(com['short_name'])
 
+                # More babying of loops.
+                await asyncio.sleep(0)
+
             return codes[county + state]
 
         else:
@@ -63,11 +80,14 @@ def getSAMECode(place):
                 elif 'administrative_area_level_1' in com['types']:
                     state = ', {}'.format(com['short_name'])
 
+                # waaaahh
+                await asyncio.sleep(0)
+
             # Not a fan of excessive code duplication, but
             # it'll be better than recursion.
             payload['address'] = city + state
-            with session.get(geocodeAPI, params=payload) as response:
-                request = response.json()
+            async with session.get(geocodeAPI, params=payload) as response:
+                request = await response.json()
 
                 try:
                     comp = request['results'][0]['address_components']
@@ -82,6 +102,9 @@ def getSAMECode(place):
                     elif 'administrative_area_level_1' in com['types']:
                         state = ', {}'.format(com['short_name'])
 
+                    # 'stop babying the loop' - Koz
+                    await asyncio.sleep(0)
+
                 try:
                     return codes[county + state]
                 except UnboundLocalError:
@@ -89,7 +112,7 @@ def getSAMECode(place):
                     raise KeyError('Couldn\'t get your county..')
 
 
-def getWeather(zipcode):
+async def getWeather(zipcode):
     '''
     Give it a postal code and it'll give you JSON representing the weather
     for that postcode.
@@ -99,12 +122,16 @@ def getWeather(zipcode):
     weatherAPI = 'https://api.weather.gov/alerts?active=1'
 
     # Now we can do this.
-    with requests.Session() as session:
-        with session.get(weatherAPI) as response:
-            request = response.json()['features']
+    async with aiohttp.ClientSession() as session:
+        async with session.get(weatherAPI) as response:
+            request = await response.text()
+
+            # Docs say aiohttp json() should use this by default
+            # but it fails because mimetype without it..Weird
+            request = json.loads(request)['features']
 
     # Request it once.
-    same = getSAMECode(zipcode)
+    same = await getSAMECode(zipcode)
 
     if not same:
         # Same is none, lets just fail. Google..pls.
@@ -116,58 +143,59 @@ def getWeather(zipcode):
 
 
 if __name__ == '__main__':
-    with open('../secrets', 'rb') as secrets:
-        # We need our authentication.
-        authsecrets = msgpack.unpackb(secrets.read(), encoding='utf-8')
+    pass
+    # with open('../secrets', 'rb') as secrets:
+    #     # We need our authentication.
+    #     authsecrets = msgpack.unpackb(secrets.read(), encoding='utf-8')
 
-        # Now we use our authentication.
-        mongo = pymongo.MongoClient()
+    #     # Now we use our authentication.
+    #     mongo = pymongo.MongoClient()
 
-        # Assign and authenticate.
-        db = mongo.bot
-        db.authenticate(authsecrets['mongo_user'], authsecrets['mongo_pass'])
+    #     # Assign and authenticate.
+    #     db = mongo.bot
+    #     db.authenticate(authsecrets['mongo_user'], authsecrets['mongo_pass'])
 
-        # Go through the subscribers and get weather and if required
-        # alert them.
-        for sub in db.subscribers.find({}):
-            # If the user requested a hush, don't bother.
-            if sub['hush']:
-                continue
+    #     # Go through the subscribers and get weather and if required
+    #     # alert them.
+    #     for sub in db.subscribers.find({}):
+    #         # If the user requested a hush, don't bother.
+    #         if sub['hush']:
+    #             continue
 
-            # TODO: make this async to speed it up, or thread.
-            for location in sub['postcode']:
-                data = getWeather(location)
+    #         # TODO: make this async to speed it up, or thread.
+    #         for location in sub['postcode']:
+    #             data = getWeather(location)
 
-                # Skip if there is no data.
-                if len(data) is 0:
-                    continue
+    #             # Skip if there is no data.
+    #             if len(data) is 0:
+    #                 continue
 
-                # Logic to avoid multiple messages for same alert.
-                ids = db.alerts.distinct('properties.id')
+    #             # Logic to avoid multiple messages for same alert.
+    #             ids = db.alerts.distinct('properties.id')
 
-                for alert in data:
-                    if alert['properties']['id'] not in ids:
-                        # It's new, do it.
-                        db.alerts.insert_one(alert)
+    #             for alert in data:
+    #                 if alert['properties']['id'] not in ids:
+    #                     # It's new, do it.
+    #                     db.alerts.insert_one(alert)
 
-                        # Build a payload for Jarvis.
-                        if alert['properties']['severity'] in sub['filter']:
-                            # Connect to socket.
-                            # Also, the things I do for <79 char.
-                            sock = socket.socket(
-                                socket.AF_INET, socket.SOCK_STREAM
-                            )
-                            sock.connect(('192.168.1.200', 8888))
+    #                     # Build a payload for Jarvis.
+    #                     if alert['properties']['severity'] in sub['filter']:
+    #                         # Connect to socket.
+    #                         # Also, the things I do for <79 char.
+    #                         sock = socket.socket(
+    #                             socket.AF_INET, socket.SOCK_STREAM
+    #                         )
+    #                         sock.connect(('192.168.1.200', 8888))
 
-                            # Build the payload.
-                            payload = {
-                                'to': sub['user'],
-                                'msg': (
-                                    alert['properties']['headline'], '\n\n',
-                                    alert['properties']['description']
-                                )
-                            }
+    #                         # Build the payload.
+    #                         payload = {
+    #                             'to': sub['user'],
+    #                             'msg': (
+    #                                 alert['properties']['headline'], '\n\n',
+    #                                 alert['properties']['description']
+    #                             )
+    #                         }
 
-                            # Send said payload.
-                            sock.send(msgpack.packb(payload))
-                            sock.close()
+    #                         # Send said payload.
+    #                         sock.send(msgpack.packb(payload))
+    #                         sock.close()
