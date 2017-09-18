@@ -3,16 +3,17 @@ import socket
 import pymongo
 import msgpack
 import json
+import aiohttp
 
 
-def humbleScrape():
+async def humbleScrape():
     '''
     Scrape the humble store front page looking for
     free games.
     '''
-    with requests.Session() as session:
-        with session.get('https://www.humblebundle.com/store') as response:
-            page_src = response.text
+    async with aiohttp.ClientSession() as session:
+        async with session.get('https://www.humblebundle.com/store') as response:
+            page_src = await response.text()
 
         for line in page_src.splitlines():
             if 'page: {"strings"' in line:
