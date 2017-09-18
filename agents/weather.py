@@ -130,6 +130,10 @@ if __name__ == '__main__':
         # Go through the subscribers and get weather and if required
         # alert them.
         for sub in db.subscribers.find({}):
+            # If the user requested a hush, don't bother.
+            if sub['hush']:
+                continue
+
             # TODO: make this async to speed it up, or thread.
             for location in sub['postcode']:
                 data = getWeather(location)
