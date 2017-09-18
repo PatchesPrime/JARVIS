@@ -1,12 +1,11 @@
+import motor.motor_asyncio
+import commands
 import slixmpp
 import logging
 import asyncio
 import msgpack
 import json
 from datetime import datetime
-import motor.motor_asyncio
-import socket
-import commands
 from agents.humble import humbleScrape
 from agents.weather import getWeather
 
