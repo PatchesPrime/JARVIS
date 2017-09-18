@@ -24,6 +24,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'update_user': commands.updateUser.__doc__,
             'add_sub': commands.addSubscriber.__doc__,
             'del_sub': commands.deleteSubscriber.__doc__,
+            'hush': self.hush.__doc__,
         }
 
         with open('secrets', 'rb') as secrets:
@@ -55,6 +56,27 @@ class JARVIS(slixmpp.ClientXMPP):
             return True
         else:
             return False
+
+    async def hush(self, user, timeout):
+        '''
+        Silence to bot for the specified time in hours.
+
+        USAGE: hush 4
+        '''
+        print(user)
+        await self.db.subscribers.update_one(
+            {'user': user},
+            {'$set': {'hush': True}}
+        )
+
+        # Sleep for time, then unhush.
+        await asyncio.sleep((60 * 60) * float(timeout))
+
+        # We should come up with a better solution. This is a bandaid.
+        await self.db.subscribers.update_one(
+            {'user': user},
+            {'$set': {'hush': False}}
+        )
 
     async def _humble(self):
         while True:
@@ -176,6 +198,16 @@ class JARVIS(slixmpp.ClientXMPP):
                     msg.reply('Updated the user, sir.').send()
                 else:
                     msg.reply('Forgive me, but there was an error..').send()
+
+        elif cmd == 'hush' and await self._isAdmin(msg['from'].bare):
+            if len(args) == 1:
+                logging.debug('Hushing {}'.format(args[0]))
+                msg.reply('Okay, sorry for the bother. Back in {} hours.'.format(
+                    args[0]
+                )).send()
+                await self.hush(msg['from'].bare, args[0])
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
 
         elif cmd == 'add_sub' and await self._isAdmin(msg['from'].bare):
             if len(args) == 1:
