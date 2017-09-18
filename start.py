@@ -26,7 +26,7 @@ class JARVIS(slixmpp.ClientXMPP):
 
         with open('secrets', 'rb') as secrets:
             # We need our authentication.
-            authsecrets = msgpack.unpackb(secrets.read(), encoding='utf-8')
+            self.authsecrets = msgpack.unpackb(secrets.read(), encoding='utf-8')
 
             # Now we use our authentication.
             mongo = motor.motor_asyncio.AsyncIOMotorClient()
