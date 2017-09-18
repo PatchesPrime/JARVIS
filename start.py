@@ -55,9 +55,11 @@ class JARVIS(slixmpp.ClientXMPP):
 
     async def _humble(self):
         while True:
+            logging.debug('Starting humbleScrape()..')
             free_games = await humbleScrape()
 
             if free_games:
+                logging.info('Found free games, issuing notifications..')
                 store = 'https://humblebundle.com/store/'
 
                 # Async finding of subs.
@@ -73,6 +75,12 @@ class JARVIS(slixmpp.ClientXMPP):
                             # Skip this game.
                             continue
 
+                        # I hate and love PEP8.
+                        logging.debug(
+                            'Sending {} a message about {}'.format(
+                                sub['user'], game['human_name']
+                            )
+                        )
 
                         # PEP8 is responsible for this. I just can't help myself.
                         self.send_message(
