@@ -8,6 +8,7 @@ import motor.motor_asyncio
 import socket
 import commands
 from agents.humble import humbleScrape
+from agents.weather import getWeather
 
 
 class JARVIS(slixmpp.ClientXMPP):
@@ -24,7 +25,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'update_user': commands.updateUser.__doc__,
             'add_sub': commands.addSubscriber.__doc__,
             'del_sub': commands.deleteSubscriber.__doc__,
-            'hush': self.hush.__doc__,
+            'hush': self._hush.__doc__,
         }
 
         with open('secrets', 'rb') as secrets:
@@ -43,7 +44,8 @@ class JARVIS(slixmpp.ClientXMPP):
         self.get_roster()
 
         # Add our agents to the loop. Also I feel a little dirty doing this.
-        await self._humble()
+        asyncio.ensure_future(self._humble())
+        asyncio.ensure_future(self._weather())
 
     async def _isAdmin(self, user):
         # Async List Comprehensions and PEP8 formatting
@@ -57,7 +59,7 @@ class JARVIS(slixmpp.ClientXMPP):
         else:
             return False
 
-    async def hush(self, user, timeout):
+    async def _hush(self, user, timeout):
         '''
         Silence to bot for the specified time in hours.
 
@@ -135,7 +137,45 @@ class JARVIS(slixmpp.ClientXMPP):
             logging.debug('Passing back to loop')
             await asyncio.sleep((60*60)*5)
 
+    async def _weather(self):
+        async for sub in self.db.subscribers.find({}):
+            if sub['hush']:
+                logging.debug('{} hushed me, skipping'.format(sub['user']))
+                continue
 
+            for location in sub['postcode']:
+                data = await getWeather(location)
+
+                # Just stop here if no alerts.
+                if len(data) is 0:
+                    continue
+
+                # Try not to send duplicate alerts.
+                ids = await self.db.alerts.distinct('properties.id')
+
+                # Actual processing.
+                for alert in data:
+                    if alert['properties']['id'] not in ids:
+                        self.db.alerts.insert_one(alert)
+
+                        if alert['properties']['severity'] in sub['filter']:
+                            # The horror
+                            logging.info(
+                                '{} for {}'.format(
+                                    alert['properties']['headline'], sub['user']
+                                )
+                            )
+                            self.send_message(
+                                mto=sub['user'],
+                                mtype='chat',
+                                mbody='{}\n\n{}'.format(
+                                    alert['properties']['headline'],
+                                    alert['properties']['description']
+                                )
+                            )
+                    # Couple async sleeps to release loop if needed.
+                    await asyncio.sleep(0)
+                await asyncio.sleep(0)
 
     async def message(self, msg):
         # huehue
@@ -205,7 +245,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 msg.reply('Okay, sorry for the bother. Back in {} hours.'.format(
                     args[0]
                 )).send()
-                await self.hush(msg['from'].bare, args[0])
+                await self._hush(msg['from'].bare, args[0])
             else:
                 msg.reply(self.usable_functions[cmd]).send()
 
