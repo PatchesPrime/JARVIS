@@ -29,14 +29,20 @@ class JARVIS(slixmpp.ClientXMPP):
 
         with open('secrets', 'rb') as secrets:
             # We need our authentication.
-            self.authsecrets = msgpack.unpackb(secrets.read(), encoding='utf-8')
+            self.authsecrets = msgpack.unpackb(
+                secrets.read(),
+                encoding='utf-8'
+            )
 
             # Now we use our authentication.
             mongo = motor.motor_asyncio.AsyncIOMotorClient()
 
             # Assign and authenticate.
             self.db = mongo.bot
-            self.db.authenticate(authsecrets['mongo_user'], authsecrets['mongo_pass'])
+            self.db.authenticate(
+                authsecrets['mongo_user'],
+                authsecrets['mongo_pass']
+            )
 
     async def start(self, event):
         self.send_presence()
@@ -108,7 +114,8 @@ class JARVIS(slixmpp.ClientXMPP):
                             )
                         )
 
-                        # PEP8 is responsible for this. I just can't help myself.
+                        # PEP8 is responsible for this.
+                        # I just can't help myself.
                         self.send_message(
                             mto=sub['user'],
                             mtype='chat',
@@ -123,9 +130,13 @@ class JARVIS(slixmpp.ClientXMPP):
                 for game in free_games:
                     self.db.games.update_one(
                         {'human_url': game['human_url']},
-                        {'$set': {'sale_end': game['sale_end'],
-                                  'human_name': game['human_name']
-                        }},
+                        {
+                            # Flymake was complaining now it's not.
+                            '$set': {
+                                'sale_end': game['sale_end'],
+                                'human_name': game['human_name']
+                            }
+                        },
                         upsert=True
                     )
 
@@ -158,13 +169,16 @@ class JARVIS(slixmpp.ClientXMPP):
                         if alert['properties']['id'] not in ids:
                             self.db.alerts.insert_one(alert)
 
-                            if alert['properties']['severity'] in sub['filter']:
+                            # PEP8
+                            severity = alert['properties']['severity']
+
+                            if severity in sub['filter']:
                                 # The horror
                                 logging.info(
-                                    '{} for {}'.format(
-                                        alert['properties']['headline'], sub['user']
-                                    )
+                                    '{} for {}'.format(severity, sub['user'])
                                 )
+
+                                # Send the message.
                                 self.send_message(
                                     mto=sub['user'],
                                     mtype='chat',
@@ -173,12 +187,11 @@ class JARVIS(slixmpp.ClientXMPP):
                                         alert['properties']['description']
                                     )
                                 )
-                        # Couple async sleeps to release loop if needed.
+                        # Release to loop if needed.
                         await asyncio.sleep(0)
 
             # Repeat every 15 minutes.
             await asyncio.sleep(60*5)
-
 
     async def message(self, msg):
         # huehue
@@ -192,10 +205,10 @@ class JARVIS(slixmpp.ClientXMPP):
         # Add "data" to it. It's inside the message body, but I'd prefer
         # the actual data we use also gets added. Also clean up things
         # that cause errors.
-        casted_msg['cmd']  = cmd
+        casted_msg['cmd'] = cmd
         casted_msg['args'] = args
+        casted_msg['to'] = str(casted_msg['to'])
         casted_msg['from'] = str(casted_msg['from'])
-        casted_msg['to']   = str(casted_msg['to'])
         casted_msg['date'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Store it.
@@ -245,9 +258,14 @@ class JARVIS(slixmpp.ClientXMPP):
         elif cmd == 'hush' and await self._isAdmin(msg['from'].bare):
             if len(args) == 1:
                 logging.debug('Hushing {}'.format(args[0]))
-                msg.reply('Okay, sorry for the bother. Back in {} hours.'.format(
-                    args[0]
-                )).send()
+
+                # Sometimes I over do it, but I stick to the PEPs for
+                # consistencies sake.
+                msg.reply(
+                    'Okay, sorry for the bother. Back in {} hours.'.format(
+                        args[0]
+                    )
+                ).send()
                 await self._hush(msg['from'].bare, args[0])
             else:
                 msg.reply(self.usable_functions[cmd]).send()
@@ -284,6 +302,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 end += "{0}\n{1}\n".format(k, v)
 
             msg.reply(end).send()
+
 
 async def handle_echo(reader, writer):
     data = await reader.read()
