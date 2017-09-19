@@ -137,44 +137,48 @@ class JARVIS(slixmpp.ClientXMPP):
             await asyncio.sleep((60*60)*5)
 
     async def _weather(self):
-        async for sub in self.db.subscribers.find({}):
-            if sub['hush']:
-                logging.debug('{} hushed me, skipping'.format(sub['user']))
-                continue
-
-            for location in sub['postcode']:
-                data = await getWeather(location)
-
-                # Just stop here if no alerts.
-                if len(data) is 0:
+        while True:
+            async for sub in self.db.subscribers.find({}):
+                if sub['hush']:
+                    logging.debug('{} hushed me, skipping'.format(sub['user']))
                     continue
 
-                # Try not to send duplicate alerts.
-                ids = await self.db.alerts.distinct('properties.id')
+                for location in sub['postcode']:
+                    data = await getWeather(location)
 
-                # Actual processing.
-                for alert in data:
-                    if alert['properties']['id'] not in ids:
-                        self.db.alerts.insert_one(alert)
+                    # Just stop here if no alerts.
+                    if len(data) is 0:
+                        continue
 
-                        if alert['properties']['severity'] in sub['filter']:
-                            # The horror
-                            logging.info(
-                                '{} for {}'.format(
-                                    alert['properties']['headline'], sub['user']
+                    # Try not to send duplicate alerts.
+                    ids = await self.db.alerts.distinct('properties.id')
+
+                    # Actual processing.
+                    for alert in data:
+                        if alert['properties']['id'] not in ids:
+                            self.db.alerts.insert_one(alert)
+
+                            if alert['properties']['severity'] in sub['filter']:
+                                # The horror
+                                logging.info(
+                                    '{} for {}'.format(
+                                        alert['properties']['headline'], sub['user']
+                                    )
                                 )
-                            )
-                            self.send_message(
-                                mto=sub['user'],
-                                mtype='chat',
-                                mbody='{}\n\n{}'.format(
-                                    alert['properties']['headline'],
-                                    alert['properties']['description']
+                                self.send_message(
+                                    mto=sub['user'],
+                                    mtype='chat',
+                                    mbody='{}\n\n{}'.format(
+                                        alert['properties']['headline'],
+                                        alert['properties']['description']
+                                    )
                                 )
-                            )
-                    # Couple async sleeps to release loop if needed.
-                    await asyncio.sleep(0)
-                await asyncio.sleep(0)
+                        # Couple async sleeps to release loop if needed.
+                        await asyncio.sleep(0)
+
+            # Repeat every 15 minutes.
+            await asyncio.sleep(60*15)
+
 
     async def message(self, msg):
         # huehue
