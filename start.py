@@ -177,7 +177,7 @@ class JARVIS(slixmpp.ClientXMPP):
                         await asyncio.sleep(0)
 
             # Repeat every 15 minutes.
-            await asyncio.sleep(60*15)
+            await asyncio.sleep(60*5)
 
 
     async def message(self, msg):
