@@ -103,7 +103,7 @@ class JARVIS(slixmpp.ClientXMPP):
                         }
 
                         # Have we seen this sale?
-                        if await self.db.subscribers.find_one(pattern):
+                        if await self.db.games.find_one(pattern):
                             # Skip this game.
                             continue
 
