@@ -173,9 +173,15 @@ class JARVIS(slixmpp.ClientXMPP):
                             severity = alert['properties']['severity']
 
                             if severity in sub['filter']:
+                                # Easier on the character count.
+                                headline = alert['properties']['headline']
+                                statement = alert['properties']['description']
+
                                 # The horror
                                 logging.info(
-                                    '{} for {}'.format(severity, sub['user'])
+                                    '{} for {}'.format(
+                                        headline, sub['user']
+                                    )
                                 )
 
                                 # Send the message.
@@ -183,8 +189,7 @@ class JARVIS(slixmpp.ClientXMPP):
                                     mto=sub['user'],
                                     mtype='chat',
                                     mbody='{}\n\n{}'.format(
-                                        alert['properties']['headline'],
-                                        alert['properties']['description']
+                                        headline, statement
                                     )
                                 )
                         # Release to loop if needed.
