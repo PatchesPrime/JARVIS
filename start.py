@@ -91,7 +91,6 @@ class JARVIS(slixmpp.ClientXMPP):
             free_games = await humbleScrape()
 
             if free_games:
-                logging.info('Found free games, issuing notifications..')
                 store = 'https://humblebundle.com/store/'
 
                 # Async finding of subs.
