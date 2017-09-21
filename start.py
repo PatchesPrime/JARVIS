@@ -70,7 +70,6 @@ class JARVIS(slixmpp.ClientXMPP):
 
         USAGE: hush 4
         '''
-        print(user)
         await self.db.subscribers.update_one(
             {'user': user},
             {'$set': {'hush': True}}
