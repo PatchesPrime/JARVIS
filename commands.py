@@ -132,20 +132,20 @@ async def updateUser(user, payload):
     return req
 
 
-async def hush(self, user, timeout):
+async def hush(db, user, timeout):
     '''
     Silence to bot for the specified time in hours.
 
     USAGE: hush 4
     '''
-    await self.db.subscribers.update_one(
+    await db.subscribers.update_one(
         {'user': user},
         {
             '$set': {
                 'hush': {
                     'active': True,
                     'started': datetime.now(),
-                    'expires': datetime.now() + timedelta(hours=timeout)
+                    'expires': datetime.now() + timedelta(hours=float(timeout))
                 }
             }
         }
