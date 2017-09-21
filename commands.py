@@ -2,6 +2,7 @@ import aiohttp
 import logging
 import json
 import msgpack
+from datetime import datetime, timedelta
 
 
 async def runREST(httptype, endpoint, payload=None):
@@ -129,3 +130,23 @@ async def updateUser(user, payload):
     req = await runREST('put', api, payload=payload)
 
     return req
+
+
+async def hush(self, user, timeout):
+    '''
+    Silence to bot for the specified time in hours.
+
+    USAGE: hush 4
+    '''
+    await self.db.subscribers.update_one(
+        {'user': user},
+        {
+            '$set': {
+                'hush': {
+                    'active': True,
+                    'started': datetime.now(),
+                    'expires': datetime.now() + timedelta(hours=timeout)
+                }
+            }
+        }
+    )
