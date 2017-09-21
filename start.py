@@ -24,7 +24,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'update_user': commands.updateUser.__doc__,
             'add_sub': commands.addSubscriber.__doc__,
             'del_sub': commands.deleteSubscriber.__doc__,
-            'hush': self._hush.__doc__,
+            'hush': commands.hush.__doc__,
         }
 
         with open('secrets', 'rb') as secrets:
@@ -49,6 +49,7 @@ class JARVIS(slixmpp.ClientXMPP):
         self.get_roster()
 
         # Add our agents to the loop. Also I feel a little dirty doing this.
+        asyncio.ensure_future(self._hush())
         asyncio.ensure_future(self._humble())
         asyncio.ensure_future(self._weather())
 
@@ -64,25 +65,20 @@ class JARVIS(slixmpp.ClientXMPP):
         else:
             return False
 
-    async def _hush(self, user, timeout):
-        '''
-        Silence to bot for the specified time in hours.
+    async def _hush(self):
+        while True:
+            logging.debug('Checking for expired hushes..')
 
-        USAGE: hush 4
-        '''
-        await self.db.subscribers.update_one(
-            {'user': user},
-            {'$set': {'hush': True}}
-        )
+            async for sub in self.db.subscribers.find({'hush.active': True}):
+                if sub['hush']['expires'] < datetime.now():
+                    result = await self.db.subscribers.update_one(
+                        {'user': sub['user']},
+                        {'$set': {'hush.active': False}}
+                    )
 
-        # Sleep for time, then unhush.
-        await asyncio.sleep((60 * 60) * float(timeout))
+                    logging.debug('Unhushed {}'.format(result))
 
-        # We should come up with a better solution. This is a bandaid.
-        await self.db.subscribers.update_one(
-            {'user': user},
-            {'$set': {'hush': False}}
-        )
+            await asyncio.sleep(5)
 
     async def _humble(self):
         while True:
@@ -148,7 +144,7 @@ class JARVIS(slixmpp.ClientXMPP):
     async def _weather(self):
         while True:
             async for sub in self.db.subscribers.find({}):
-                if sub['hush']:
+                if sub['hush']['active']:
                     logging.debug('{} hushed me, skipping'.format(sub['user']))
                     continue
 
@@ -269,7 +265,7 @@ class JARVIS(slixmpp.ClientXMPP):
                         args[0]
                     )
                 ).send()
-                await self._hush(msg['from'].bare, args[0])
+                await commands.hush(self.db, msg['from'].bare, args[0])
             else:
                 msg.reply(self.usable_functions[cmd]).send()
 
