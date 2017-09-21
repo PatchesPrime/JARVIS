@@ -25,6 +25,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'add_sub': commands.addSubscriber.__doc__,
             'del_sub': commands.deleteSubscriber.__doc__,
             'hush': commands.hush.__doc__,
+            'same': commands.getSAMECode.__doc__,
         }
 
         with open('secrets', 'rb') as secrets:
@@ -218,7 +219,7 @@ class JARVIS(slixmpp.ClientXMPP):
             if len(args) >= 2:
                 req = await commands.registerUser(*args)
                 if req == 201:
-                    msg.reply('Registered the requested user, sir.').send()
+                    msg.reply('Registered the requested user.').send()
                 else:
                     msg.reply('Apologies, but there was an error.').send()
 
@@ -226,10 +227,10 @@ class JARVIS(slixmpp.ClientXMPP):
             if len(args) == 1:
                 req = await commands.deleteUser(args[0])
                 if req == 200:
-                    msg.reply('Removed {0}\'s credentials, sir.'.format(
+                    msg.reply('Removed {0}\'s credentials.'.format(
                         args[0])).send()
                 else:
-                    msg.reply('Apologies, sir; an error has occured..').send()
+                    msg.reply('Apologies; an error has occured..').send()
 
         elif cmd == 'update_user' and await self._isAdmin(msg['from'].bare):
             if len(args) >= 1:
@@ -239,7 +240,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 except ValueError as e:
                     # The things I do for PEP8.
                     body = (
-                        'Sorry sir, you\'ve provided me with invalid JSON:',
+                        'Sorry, you\'ve provided me with invalid JSON:',
                         ' {0}'.format(e)  # A bit verbose, but accurate.
                     )
 
@@ -250,7 +251,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 # Otherwise, process the command.
                 req = await commands.updateUser(args[0], args_payload)
                 if req == 200:
-                    msg.reply('Updated the user, sir.').send()
+                    msg.reply('Updated the user.').send()
                 else:
                     msg.reply('Forgive me, but there was an error..').send()
 
@@ -295,8 +296,20 @@ class JARVIS(slixmpp.ClientXMPP):
             else:
                 msg.reply(self.usable_functions[cmd]).send()
 
+        elif cmd == 'same':
+            if len(args) == 1:
+                logging.debug('Retrieving SAME for {}'.format(msg['from']))
+                try:
+                    msg.reply('Certainly, the code requested: {}'.format(
+                        await commands.getSAMECode(args[0])
+                    )).send()
+                except KeyError:
+                    msg.reply('Apologies, I can\'t find that code').send()
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
+
         else:
-            end = "My available commands, sir:\n"
+            end = "My available commands:\n"
             for k, v in self.usable_functions.items():
                 end += "{0}\n{1}\n".format(k, v)
 
