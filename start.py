@@ -148,7 +148,7 @@ class JARVIS(slixmpp.ClientXMPP):
                     logging.debug('{} hushed me, skipping'.format(sub['user']))
                     continue
 
-                for location in sub['postcode']:
+                for location in sub['same_codes']:
                     data = await getWeather(location)
 
                     # Just stop here if no alerts.

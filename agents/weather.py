@@ -112,7 +112,7 @@ async def getSAMECode(place):
                     raise KeyError('Couldn\'t get your county..')
 
 
-async def getWeather(zipcode):
+async def getWeather(same):
     '''
     Give it a postal code and it'll give you JSON representing the weather
     for that postcode.
@@ -130,12 +130,6 @@ async def getWeather(zipcode):
             # but it fails because mimetype without it..Weird
             request = json.loads(request)['features']
 
-    # Request it once.
-    same = await getSAMECode(zipcode)
-
-    if not same:
-        # Same is none, lets just fail. Google..pls.
-        return []
 
     # Seriously forgive me padre, pls.
     return [x for x in request
