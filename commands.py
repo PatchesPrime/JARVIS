@@ -43,19 +43,19 @@ async def runREST(httptype, endpoint, payload=None):
             return None
 
 
-async def addSubscriber(db, user, postcode=None, weather_filter=None, admin=False):
+async def addSubscriber(db, user, same_codes=None, weather_filter=None, admin=False):
     '''
     Add a subscriber to my MongoDB for notable weather alerts.
     USAGE: add_sub user@host
     USAGE: add_sub user@host add_sub test@test {"admin": true}
 
     NOTE: valid JSON attributes:
-        'postcode': ['zipcode1', 'zipcode2']
+        'same_codes': ['samecode1', 'samecode2']
         'weather_filter': ['Severe', 'Unknown']
         'admin': false
     '''
-    if postcode is None:
-        postcode = []
+    if same_codes is None:
+        same_codes = []
 
     if weather_filter is None:
         weather_filter = []
@@ -63,7 +63,7 @@ async def addSubscriber(db, user, postcode=None, weather_filter=None, admin=Fals
     result = await db.subscribers.insert_one(
         {
             'user': user,
-            'postcode': list(postcode),
+            'same_codes': list(same_codes),
             'filter': list(weather_filter),
             'admin': admin
         }
