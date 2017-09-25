@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 
 
-async def runREST(httptype, endpoint, payload=None):
+async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
     if payload is not None:
         if type(payload) is not dict:
             raise ValueError('payload argument must be dict')
@@ -16,14 +16,18 @@ async def runREST(httptype, endpoint, payload=None):
     with open('secrets', 'rb') as f:
         secrets = msgpack.unpackb(f.read(), encoding='utf-8')
 
-    # We need these.
-    headers = {
-        'Authorization': secrets['restapi_key'],
-        'Content-Type': 'application/json',
-    }
+    # Default URL is our local REST
+    if url is None:
+        url = 'http://localhost:9090/plugins/restapi/v1/{0}/'.format(
+            endpoint
+        )
 
-    url = 'http://localhost:9090/plugins/restapi/v1/{0}/'.format(
-        endpoint)
+    # Default headers for our local REST API.
+    if headers is None:
+        headers = {
+            'Authorization': secrets['restapi_key'],
+            'Content-Type': 'application/json',
+        }
 
     async with aiohttp.ClientSession() as session:
         # Build and initiate the request.
