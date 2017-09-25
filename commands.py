@@ -21,6 +21,8 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
         url = 'http://localhost:9090/plugins/restapi/v1/{0}/'.format(
             endpoint
         )
+    else:
+        url += endpoint
 
     # Default headers for our local REST API.
     if headers is None:
@@ -36,11 +38,11 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
             if payload is None:
                 req = getattr(session, httptype)
                 async with req(url, headers=headers) as response:
-                    return response.status
+                    return response
             else:
                 req = getattr(session, httptype)
                 async with req(url, headers=headers, data=json.dumps(payload)) as response:
-                    return response.status
+                    return response
 
         except AttributeError as e:
             logging.error('Failed to run REST API request..{}'.format(e))
@@ -103,7 +105,7 @@ async def registerUser(user, pwd):
     }
 
     req = await runREST('post', 'users', payload=payload)
-    return req
+    return req.status
 
 
 async def deleteUser(user):
@@ -115,7 +117,7 @@ async def deleteUser(user):
     endpoint = 'users/{0}'.format(user)
     req = await runREST('delete', endpoint)
 
-    return req
+    return req.status
 
 
 async def updateUser(user, payload):
@@ -136,7 +138,7 @@ async def updateUser(user, payload):
 
     req = await runREST('put', api, payload=payload)
 
-    return req
+    return req.status
 
 
 async def hush(db, user, timeout):
