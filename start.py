@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 from agents.humble import humbleScrape
 from agents.weather import getWeather
+from agents.github import getCommits
 
 
 class JARVIS(slixmpp.ClientXMPP):
@@ -53,6 +54,7 @@ class JARVIS(slixmpp.ClientXMPP):
         asyncio.ensure_future(self._hush())
         asyncio.ensure_future(self._humble())
         asyncio.ensure_future(self._weather())
+        asyncio.ensure_future(self._github())
 
     async def _isAdmin(self, user):
         # Async List Comprehensions and PEP8 formatting
@@ -192,6 +194,43 @@ class JARVIS(slixmpp.ClientXMPP):
 
             # Repeat every 15 minutes.
             await asyncio.sleep(60*5)
+
+    async def _github(self):
+        while True:
+            async for sub in self.db.subscribers.find({}):
+                for info in sub['git']:
+                    known = await self.db.git.distinct(
+                        'commits.id',
+                        {'id': '{user}/{repo}'.format(**info)}
+                    )
+
+                    logging.debug('KNOWN COMMITS: {}'.format(known))
+
+                    data = await getCommits(info['user'], info['repo'])
+
+                    for commit in data:
+                        if commit['id'] not in known:
+                            if len(known) >= 1:
+                                self.send_message(
+                                    mto=sub['user'],
+                                    mtype='chat',
+                                    mbody='New commit {}/{}: {}\n{}'.format(
+                                        info['user'],
+                                        info['repo'],
+                                        commit['message'],
+                                        commit['url']
+                                    )
+                                )
+
+                            result = await self.db.git.update(
+                                {'id': '{user}/{repo}'.format(**info)},
+                                {'$push': {'commits': commit}},
+                                upsert=True
+                            )
+
+                            logging.debug('Upsert: {}'.format(result))
+
+            await asyncio.sleep((60*60)*24)
 
     async def message(self, msg):
         # huehue
