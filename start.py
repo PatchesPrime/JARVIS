@@ -27,6 +27,8 @@ class JARVIS(slixmpp.ClientXMPP):
             'del_sub': commands.deleteSubscriber.__doc__,
             'hush': commands.hush.__doc__,
             'same': commands.getSAMECode.__doc__,
+            'gitwatch': commands.addGitSub.__doc__,
+            'delgit': commands.delGitSub.__doc__,
         }
 
         with open('secrets', 'rb') as secrets:
@@ -331,6 +333,28 @@ class JARVIS(slixmpp.ClientXMPP):
                 msg.reply('Removed {} matching "{}"'.format(
                     await commands.deleteSubscriber(self.db, args[0]),
                     args[0]
+                )).send()
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
+
+        elif cmd == 'gitwatch' and await self._isAdmin(msg['from'].bare):
+            if len(args) == 2:
+                logging.debug(
+                    'Adding git {} to {}'.format(args[1], msg['from'].bare)
+                )
+                msg.reply('Added {} git subscriptions.'.format(
+                    await commands.addGitSub(self.db, msg['from'].bare, *args)
+                )).send()
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
+
+        elif cmd == 'delgit' and await self._isAdmin(msg['from'].bare):
+            if len(args) == 2:
+                logging.debug(
+                    'Deleting git {} to {}'.format(args[1], msg['from'].bare)
+                )
+                msg.reply('Deleted {} git subscriptions.'.format(
+                    await commands.delGitSub(self.db, msg['from'].bare, *args)
                 )).send()
             else:
                 msg.reply(self.usable_functions[cmd]).send()

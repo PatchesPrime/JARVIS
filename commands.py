@@ -93,6 +93,38 @@ async def deleteSubscriber(db, user):
     return result.deleted_count
 
 
+async def addGitSub(db, user, gituser, gitrepo):
+    '''
+    Add a subscription to a GitHub git repo to watch for commits.
+    USAGE: gitwatch github_username github_repository
+
+    Example: gitwatch PatchesPrime JARVIS
+    will watch 'PatchesPrime' users 'JARVIS' repo.
+    '''
+    result = await db.subscribers.update_one(
+        {'user': str(user)},
+        {'$push': {'git': {'user': str(gituser), 'repo': str(gitrepo)}}},
+        upsert=True
+    )
+
+    return result.modified_count
+
+
+async def delGitSub(db, user, gituser, gitrepo):
+    '''
+    Delete a subscription to a GitHub git repo to watch for commits.
+    USAGE: delgit github_username github_repository
+
+    Example: delgit PatchesPrime JARVIS
+    '''
+    result = await db.subscribers.update_one(
+        {'user': str(user)},
+        {'$pull': {'git': {'user': str(gituser), 'repo': str(gitrepo)}}},
+    )
+
+    return result.modified_count
+
+
 async def registerUser(user, pwd):
     '''
     Register a user on HIVEs XMPP server.
