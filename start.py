@@ -233,7 +233,7 @@ class JARVIS(slixmpp.ClientXMPP):
 
                             logging.debug('Upsert: {}'.format(result))
 
-            await asyncio.sleep((60*60)*24)
+            await asyncio.sleep((60*60)*12)
 
     async def message(self, msg):
         # huehue
