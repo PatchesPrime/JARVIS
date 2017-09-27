@@ -1,10 +1,20 @@
 import aiohttp
+from os.path import expanduser
+from commands import readfile
 
 
 async def getCommits(user, repo):
+    '''
+    Simple method to retrieve the commits for a users repository on github.
+    '''
     async with aiohttp.ClientSession() as session:
         url = f'https://api.github.com/repos/{user}/{repo}/commits'
-        async with session.get(url) as response:
+        secrets = await readfile(expanduser('~/projects/JARVIS/secrets'))
+        auth = {
+            'Authorization': 'token {}'.format(secrets['github'])
+        }
+
+        async with session.get(url, headers=auth) as response:
             # Ha.
             data = [
                 {
