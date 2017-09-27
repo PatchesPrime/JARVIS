@@ -201,6 +201,7 @@ class JARVIS(slixmpp.ClientXMPP):
         while True:
             async for sub in self.db.subscribers.find({}):
                 for info in sub['git']:
+                    logging.debug('GIT: {}'.format(info))
                     known = await self.db.git.distinct(
                         'commits.id',
                         {'id': '{user}/{repo}'.format(**info)}
