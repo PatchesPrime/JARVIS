@@ -9,7 +9,7 @@ async def getCommits(user, repo):
             data = [
                 {
                     'id': commit['sha'],
-                    'author': commit['author']['login'],
+                    'author': commit['commit']['author']['name'],
                     'message': commit['commit']['message'],
                     'date': commit['commit']['committer']['date'],
                     'url': commit['html_url']
