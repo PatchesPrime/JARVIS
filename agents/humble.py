@@ -9,7 +9,13 @@ async def humbleScrape():
     '''
     url = 'https://www.humblebundle.com/store'
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
+        # There have been no complaints, but this will help them find me if
+        # they have some.
+        headers = {
+            'User-Agent': 'JARVIS/v2 (https://github.com/PatchesPrime/JARVIS)',
+        }
+
+        async with session.get(url, headers=headers) as response:
             page_src = await response.text()
 
         for line in page_src.splitlines():

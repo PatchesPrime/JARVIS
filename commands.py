@@ -13,8 +13,7 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
         if type(payload) is not dict:
             raise ValueError('payload argument must be dict')
 
-    with open('secrets', 'rb') as f:
-        secrets = msgpack.unpackb(f.read(), encoding='utf-8')
+    authsecrets = await readFile(expanduser('~/projects/JARVIS/secrets'))
 
     # Default URL is our local REST
     if url is None:
@@ -27,7 +26,8 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
     # Default headers for our local REST API.
     if headers is None:
         headers = {
-            'Authorization': secrets['restapi_key'],
+            'User-Agent': 'JARVIS/v2 (https://github.com/PatchesPrime/JARVIS)',
+            'Authorization': authsecrets['restapi_key'],
             'Content-Type': 'application/json',
         }
 
@@ -193,7 +193,7 @@ async def hush(db, user, timeout):
     )
 
 
-async def readfile(filename, loop=None):
+async def readFile(filename, loop=None):
     if loop is None:
         loop = asyncio.get_event_loop()
 
@@ -211,8 +211,8 @@ async def getSAMECode(place):
     USAGE: same zipcodeHere
     '''
     # We need this information. They technically run in another thread.
-    authsecrets = await readfile(expanduser('~/projects/JARVIS/secrets'))
-    codes = await readfile(expanduser('~/projects/JARVIS/agents/same.codes'))
+    authsecrets = await readFile(expanduser('~/projects/JARVIS/secrets'))
+    codes = await readFile(expanduser('~/projects/JARVIS/agents/same.codes'))
 
     async with aiohttp.ClientSession() as session:
         # We need to do this first.
