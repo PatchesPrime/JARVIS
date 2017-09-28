@@ -1,7 +1,7 @@
 # JARVIS
 [J]*ust* [A]*nother* [R]*ather* [V]*ery* [I]*gnorant* [S]*ystem*
 
-JARVIS is a bot developed for use by my friends and I on XMPP. It started as just an weather alert bot, and progressed from there.
+JARVIS is a bot developed for use by my friends and I on XMPP. It started as just a weather alert bot, and progressed from there.
 Internally he uses a MongoDB server for dealing with data persistence. One day I'll detail its 'schema' here in the unlikely event someone wants to run their own JARVIS.
 
 ***
