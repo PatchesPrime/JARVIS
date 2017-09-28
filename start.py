@@ -264,6 +264,8 @@ class JARVIS(slixmpp.ClientXMPP):
                     msg.reply('Registered the requested user.').send()
                 else:
                     msg.reply('Apologies, but there was an error.').send()
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
 
         elif cmd == 'delete_user' and await self._isAdmin(msg['from'].bare):
             if len(args) == 1:
@@ -273,6 +275,8 @@ class JARVIS(slixmpp.ClientXMPP):
                         args[0])).send()
                 else:
                     msg.reply('Apologies; an error has occured..').send()
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
 
         elif cmd == 'update_user' and await self._isAdmin(msg['from'].bare):
             if len(args) >= 1:
@@ -296,6 +300,8 @@ class JARVIS(slixmpp.ClientXMPP):
                     msg.reply('Updated the user.').send()
                 else:
                     msg.reply('Forgive me, but there was an error..').send()
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
 
         elif cmd == 'hush' and await self._isAdmin(msg['from'].bare):
             if len(args) == 1:
