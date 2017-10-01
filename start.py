@@ -148,6 +148,7 @@ class JARVIS(slixmpp.ClientXMPP):
 
     async def _weather(self):
         while True:
+            logging.debug('Checking the weather..')
             async for sub in self.db.subscribers.find({}):
                 if sub['hush']['active']:
                     logging.debug('{} hushed me, skipping'.format(sub['user']))
@@ -199,6 +200,7 @@ class JARVIS(slixmpp.ClientXMPP):
 
     async def _github(self):
         while True:
+            logging.debug('Checking for new commits to known repositories..')
             async for sub in self.db.subscribers.find({}):
                 for info in sub['git']:
                     logging.debug('GIT: {}'.format(info))
