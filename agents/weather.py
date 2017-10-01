@@ -1,5 +1,6 @@
 import json
 import aiohttp
+import logging
 
 
 async def getWeather(same):
@@ -9,7 +10,7 @@ async def getWeather(same):
 
     '''
     # URL for PEP8
-    weatherAPI = 'https://api.weather.gov/alerts?active=1'
+    url = 'https://api.weather.gov/alerts?active=1'
 
     # Now we can do this.
     async with aiohttp.ClientSession() as session:
@@ -19,12 +20,19 @@ async def getWeather(same):
             'User-Agent': 'JARVIS/v2 (https://github.com/PatchesPrime/JARVIS)',
         }
 
-        async with session.get(weatherAPI, headers=headers) as response:
-            request = await response.text()
+        try:
+            async with session.get(url, headers=headers) as response:
+                request = await response.text()
 
-            # Docs say aiohttp json() should use this by default
-            # but it fails because mimetype without it..Weird
-            request = json.loads(request)['features']
+                # Docs say aiohttp json() should use this by default
+                # but it fails because mimetype without it..Weird
+                request = json.loads(request)['features']
+
+        except aiohttp.client_exceptions.ClientConnectorError as e:
+            logging.warn('Weather request failed: {}'.format(e))
+
+            # We'll just default to nothing. For now.
+            return []
 
     # Seriously forgive me padre, pls.
     return [x for x in request
