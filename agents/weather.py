@@ -26,7 +26,10 @@ async def getWeather(same):
 
                 # Docs say aiohttp json() should use this by default
                 # but it fails because mimetype without it..Weird
-                request = json.loads(request)['features']
+                try:
+                    request = json.loads(request)['features']
+                except json.decoder.JSONDecodeError as e:
+                    logging.warn('JSON load failed: {}'.format(e))
 
         except aiohttp.client_exceptions.ClientConnectorError as e:
             logging.warn('Weather request failed: {}'.format(e))
