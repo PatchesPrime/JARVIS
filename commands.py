@@ -71,7 +71,13 @@ async def addSubscriber(db, user, same_codes=None, weather_filter=None, admin=Fa
             'user': user,
             'same_codes': list(same_codes),
             'filter': list(weather_filter),
-            'admin': admin
+            'admin': admin,
+            'hush': {
+                'active': False,
+                'started': datetime.now(),
+                'expires': datetime.now(),
+            },
+            'git': [],
         }
     )
 
