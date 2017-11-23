@@ -93,41 +93,35 @@ class JARVIS(slixmpp.ClientXMPP):
             if free_games:
                 store = 'https://humblebundle.com/store/'
 
-                # Async finding of subs.
-                async for sub in self.db.subscribers.find({}):
-                    for game in free_games:
-                        pattern = {
-                            'human_url': game['human_url'],
-                            'sale_end': game['sale_end']
-                        }
-
-                        # Have we seen this sale?
-                        if await self.db.games.find_one(pattern):
-                            # Skip this game.
-                            continue
-
-                        # I hate and love PEP8.
-                        logging.debug(
-                            'Sending {} a message about {}'.format(
-                                sub['user'], game['human_name']
-                            )
-                        )
-
-                        # PEP8 is responsible for this.
-                        # I just can't help myself.
-                        self.send_message(
-                            mto=sub['user'],
-                            mtype='chat',
-                            mbody='FREE GAME: {}\n{}{}'.format(
-                                game['human_name'], store, game['human_url']
-                            )
-                        )
-
-                        # Just in case something needs the loop
-                        await asyncio.sleep(0)
-
                 for game in free_games:
-                    self.db.games.update_one(
+                    pattern = {
+                        'human_url': game['human_url'],
+                        'sale_end': game['sale_end']
+                    }
+
+                    # Have we seen this sale?
+                    if await self.db.games.find_one(pattern):
+                        # Skip this game.
+                        continue
+
+                    # I hate the way this is not just a dictionary.
+                    # Why library author? Why?
+                    for friend in self.client_roster:
+                        subtype = self.client_roster[friend]['subscription']
+                        if subtype == 'both':
+                            # PEP8 is responsible for this.
+                            # I just can't help myself.
+                            self.send_message(
+                                mto=friend,
+                                mtype='chat',
+                                mbody='FREE GAME: {}\n{}{}'.format(
+                                    game['human_name'],
+                                    store, game['human_url']
+                                )
+                            )
+                        await asyncio.sleep(0)  # async sleep just in case
+
+                    await self.db.games.update_one(
                         {'human_url': game['human_url']},
                         {
                             # Flymake was complaining now it's not.
@@ -138,9 +132,6 @@ class JARVIS(slixmpp.ClientXMPP):
                         },
                         upsert=True
                     )
-
-                    # Same as above.
-                    await asyncio.sleep(0)
 
             # Acts sort of like a timer.
             logging.debug('Passing back to loop')
