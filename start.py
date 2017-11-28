@@ -379,7 +379,11 @@ class JARVIS(slixmpp.ClientXMPP):
             msg.reply(end).send()
 
 
-async def handle_echo(reader, writer):
+async def handle_serviceMessage(reader, writer):
+    '''
+    This handles the messages sent from other scripts and services
+    on the network that only use JARVIS to send a message. Pretty simple.
+    '''
     data = await reader.read()
     addr = writer.get_extra_info('peername')
     logging.warn('msg from: {0}, len(data): {1}'.format(
@@ -424,7 +428,7 @@ if __name__ == '__main__':
     # Add a TCP listener to the bots loop.
     xmpp.loop.run_until_complete(
         asyncio.start_server(
-            handle_echo, '192.168.1.200', 8888
+            handle_serviceMessage, '192.168.1.200', 8888
         )
     )
 
