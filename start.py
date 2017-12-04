@@ -6,6 +6,7 @@ import asyncio
 import msgpack
 import json
 from datetime import datetime
+import config
 from agents.humble import humbleScrape
 from agents.weather import getWeather
 from agents.github import getCommits
@@ -31,22 +32,15 @@ class JARVIS(slixmpp.ClientXMPP):
             'delgit': commands.delGitSub.__doc__,
         }
 
-        with open('secrets', 'rb') as secrets:
-            # We need our authentication.
-            self.authsecrets = msgpack.unpackb(
-                secrets.read(),
-                encoding='utf-8'
-            )
+        # Now we use our authentication.
+        mongo = motor.motor_asyncio.AsyncIOMotorClient()
 
-            # Now we use our authentication.
-            mongo = motor.motor_asyncio.AsyncIOMotorClient()
-
-            # Assign and authenticate.
-            self.db = mongo.bot
-            self.db.authenticate(
-                authsecrets['mongo_user'],
-                authsecrets['mongo_pass']
-            )
+        # Assign and authenticate.
+        self.db = mongo.bot
+        self.db.authenticate(
+            config.mongo_user,
+            config.mongo_pass,
+        )
 
     async def start(self, event):
         self.send_presence()
@@ -416,13 +410,10 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO,
                         format='%(levelname)-8s %(message)s')
 
-    with open('secrets', 'rb') as secret:
-        authsecrets = msgpack.unpackb(secret.read(), encoding='utf-8')
-
     # Build the bot object. Also has a loop exposed at obj.loop
     xmpp = JARVIS(
-        authsecrets['xmppuser'],
-        authsecrets['xmpppass']
+        config.xmpp_user,
+        config.xmpp_pass,
     )
 
     # Add a TCP listener to the bots loop.

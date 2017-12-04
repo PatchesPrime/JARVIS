@@ -6,14 +6,13 @@ import asyncio
 from os.path import expanduser
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
+import config
 
 
 async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
     if payload is not None:
         if type(payload) is not dict:
             raise ValueError('payload argument must be dict')
-
-    authsecrets = await readFile(expanduser('~/projects/JARVIS/secrets'))
 
     # Default URL is our local REST
     if url is None:
@@ -27,7 +26,7 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
     if headers is None:
         headers = {
             'User-Agent': 'JARVIS/v2 (https://github.com/PatchesPrime/JARVIS)',
-            'Authorization': authsecrets['restapi_key'],
+            'Authorization': config.restapi_key,
             'Content-Type': 'application/json',
         }
 
@@ -217,7 +216,6 @@ async def getSAMECode(place):
     USAGE: same zipcodeHere
     '''
     # We need this information. They technically run in another thread.
-    authsecrets = await readFile(expanduser('~/projects/JARVIS/secrets'))
     codes = await readFile(expanduser('~/projects/JARVIS/agents/same.codes'))
 
     async with aiohttp.ClientSession() as session:
@@ -225,7 +223,7 @@ async def getSAMECode(place):
         geocodeAPI = 'https://maps.googleapis.com/maps/api/geocode/json'
 
         # Build the payload and request it..
-        payload = {'address': place, 'key': authsecrets['geocode_key']}
+        payload = {'address': place, 'key': config.geocode_key}
         async with session.get(geocodeAPI, params=payload) as response:
             request = await response.json()
 

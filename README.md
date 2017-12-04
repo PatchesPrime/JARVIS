@@ -15,3 +15,18 @@ Internally he uses a MongoDB server for dealing with data persistence. One day I
 ### Use XMPP and like JARVIS?
 JARVIS is technically capable of handling all the features listed above for anyone who uses XMPP as we do. If you're interested in having
 him do what he does for you just send me a message here on GitHub and we'll get you set up. He only listens to subscribers/admin for most things.
+
+***
+### Forking
+JARVIS requires a few thing to operate, namely some API keys and a MongoDB instance. I intend to remove the MongoDB requirement, however he will still require some API keys (for GitHub for example). It's a pain, but not a huge one. May change in future.
+
+Create a 'config.py' in his root directory with the following:
+``` python
+xmpp_user = 'jarvis@hive.nullcorp.org/bot'
+xmpp_pass = 'password here'
+mongo_user = 'jarvis'
+mongo_pass = 'mongo pass here'
+geocode_key = 'google geocode api key'
+restapi_key = 'xmpp server rest api key'
+github = 'github api key'
+```
