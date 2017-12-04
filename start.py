@@ -353,7 +353,7 @@ class JARVIS(slixmpp.ClientXMPP):
             else:
                 msg.reply(self.usable_functions[cmd]).send()
 
-        elif cmd == 'same':
+        elif cmd == 'same' and await self._isAdmin(msg['from'].bare):
             if len(args) == 1:
                 logging.debug('Retrieving SAME for {}'.format(msg['from']))
                 try:
