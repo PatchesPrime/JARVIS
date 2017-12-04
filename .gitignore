@@ -1,5 +1,3 @@
-/secrets.py
-/authsecrets.py
-/secrets
 *.pyc
 .*__pycache__.*
+/config.py
