@@ -13,8 +13,7 @@ Internally he uses a MongoDB server for dealing with data persistence. One day I
 
 ***
 ### Use XMPP and like JARVIS?
-JARVIS is technically capable of handling all the features listed above for anyone who uses XMPP as we do. If you're interested in having
-him do what he does for you just send me a message here on GitHub and we'll get you set up. He only listens to subscribers/admin for most things.
+JARVIS is technically capable of handling all the features listed above for anyone who uses XMPP as we do. He only listens to subscribers/admin for most things, but just being his friend will get you free game notifications. His JID: jarvis@hive.nullcorp.org
 
 ***
 ### Forking
@@ -22,7 +21,7 @@ JARVIS requires a few thing to operate, namely some API keys and a MongoDB insta
 
 Create a 'config.py' in his root directory with the following:
 ``` python
-xmpp_user = 'jarvis@hive.nullcorp.org/bot'
+xmpp_user = 'JID here'
 xmpp_pass = 'password here'
 mongo_user = 'jarvis'
 mongo_pass = 'mongo pass here'
