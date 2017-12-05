@@ -7,6 +7,7 @@ from os.path import expanduser
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 import config
+from sympy import solve, simplify, SympifyError
 
 
 async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
@@ -206,6 +207,49 @@ async def readFile(filename, loop=None):
         io_pool = ThreadPoolExecutor()
         obj = await loop.run_in_executor(io_pool, data.read)
         return msgpack.unpackb(obj, encoding='utf-8')
+
+
+async def solveMath(expr):
+    """
+    Takes an mathematics expression or equation and sends it to
+    the applicable function to find the solution from sympy
+
+    USAGE: solve expression/equation
+
+    NOTE: no spaces in expression/equation. Operations must be explicit.
+    eg. requires 3*x rather than 3x
+    """
+
+    result = None
+    if not isinstance(expr, str):
+        raise TypeError("Error: solve requires string")
+
+    if '=' in expr:
+        # sympy requires all equations to be equal to 0
+        # so we're gonna juggle numbers and move it all to one side,
+        # removing the = operator.
+        eqindex = expr.index('=')
+
+        # subtracting the whole right side from left side.
+        expr = "{before}-({after})".format(
+            before=expr[:eqindex],
+            after=expr[eqindex+1:]
+        )
+        try:
+            result = solve(expr)
+        except SympifyError as e:
+            raise SyntaxError(e) from None
+
+    else:  # not an equation, we're going to simplify.
+        try:
+            result = simplify(expr)
+        except SympifyError as e:
+            raise SyntaxError(e) from None
+
+    result = str(result)
+    if 'zoo' in result:
+        result = "ZeroDivisionError"
+    return result
 
 
 async def getSAMECode(place):
