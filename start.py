@@ -383,9 +383,9 @@ class JARVIS(slixmpp.ClientXMPP):
                 msg.reply(self.usable_functions[cmd]).send()
 
         else:
-            end = "My available commands:\n"
+            end = 'My available commands:\n'
             for k, v in self.usable_functions.items():
-                end += "{0}\n{1}\n".format(k, v)
+                end += '{0}\n{1}\n'.format(k, v)
 
             msg.reply(end).send()
 
