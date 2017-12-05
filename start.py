@@ -30,6 +30,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'same': commands.getSAMECode.__doc__,
             'gitwatch': commands.addGitSub.__doc__,
             'delgit': commands.delGitSub.__doc__,
+            'solve': commands.solveMath.__doc__,
         }
 
         # Now we use our authentication.
@@ -362,6 +363,22 @@ class JARVIS(slixmpp.ClientXMPP):
                     )).send()
                 except KeyError:
                     msg.reply('Apologies, I can\'t find that code').send()
+            else:
+                msg.reply(self.usable_functions[cmd]).send()
+
+        elif cmd == 'solve':
+            if len(args) == 1:
+                logging.debug('Solving math problem {}'.format(args))
+                try:
+                    msg.reply('Your answer, sir: {}'.format(
+                        await commands.solveMath(args[0])
+                    )).send()
+                except SyntaxError as e:
+                    logging.debug(e)
+
+                    msg.reply(
+                        'Terribly sorry, sir. Something went wrong.'
+                    ).send()
             else:
                 msg.reply(self.usable_functions[cmd]).send()
 
