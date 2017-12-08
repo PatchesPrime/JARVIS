@@ -190,17 +190,19 @@ class JARVIS(slixmpp.ClientXMPP):
             async for sub in self.db.subscribers.find({}):
                 for info in sub['git']:
                     logging.debug('GIT: {}'.format(info))
+
+                    # Known repository specific commits.
                     known = await self.db.git.distinct(
                         'commits.id',
                         {'id': '{user}/{repo}'.format(**info)}
                     )
 
-                    logging.debug('KNOWN COMMITS: {}'.format(known))
-
+                    # Request the data.
                     data = await getCommits(info['user'], info['repo'])
 
                     for commit in data:
                         if commit['id'] not in known:
+                            # Prevents spam on first lookup of repo.
                             if len(known) >= 1:
                                 self.send_message(
                                     mto=sub['user'],
@@ -221,6 +223,7 @@ class JARVIS(slixmpp.ClientXMPP):
 
                             logging.debug('Upsert: {}'.format(result))
 
+            # Sleep for 12 hours.
             await asyncio.sleep((60*60)*12)
 
     async def message(self, msg):
@@ -370,14 +373,14 @@ class JARVIS(slixmpp.ClientXMPP):
             if len(args) == 1:
                 logging.debug('Solving math problem {}'.format(args))
                 try:
-                    msg.reply('Your answer, sir: {}'.format(
+                    msg.reply('Certainly, your answer is:: {}'.format(
                         await commands.solveMath(args[0])
                     )).send()
                 except SyntaxError as e:
                     logging.debug(e)
 
                     msg.reply(
-                        'Terribly sorry, sir. Something went wrong.'
+                        'Terribly sorry. Something went wrong.'
                     ).send()
             else:
                 msg.reply(self.usable_functions[cmd]).send()
