@@ -59,11 +59,8 @@ class JARVIS(slixmpp.ClientXMPP):
             x['user'] async for x in self.db.subscribers.find({'admin': True})
         ]
 
-        # This method is meant to be used in an if, so..
-        if user in admin:
-            return True
-        else:
-            return False
+        # Are they an admin?
+        return user in admin
 
     async def _hush(self):
         while True:
