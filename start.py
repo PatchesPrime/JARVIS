@@ -375,10 +375,7 @@ class JARVIS(slixmpp.ClientXMPP):
                     )).send()
                 except SyntaxError as e:
                     logging.debug(e)
-
-                    msg.reply(
-                        'Terribly sorry. Something went wrong.'
-                    ).send()
+                    msg.reply('Terribly sorry. Something went wrong.').send()
             else:
                 msg.reply(self.usable_functions[cmd]).send()
 
