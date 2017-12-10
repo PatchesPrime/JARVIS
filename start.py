@@ -5,7 +5,7 @@ import logging
 import asyncio
 import msgpack
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import config
 from agents.humble import humbleScrape
 from agents.weather import getWeather
@@ -62,7 +62,7 @@ class JARVIS(slixmpp.ClientXMPP):
         # Are they an admin?
         return user in admin
 
-    async def _hush(self):
+    async def _hush(self, *, freq=timedelta(seconds=5)):
         while True:
             logging.debug('Checking for expired hushes..')
 
@@ -75,9 +75,10 @@ class JARVIS(slixmpp.ClientXMPP):
 
                     logging.debug('Unhushed {}'.format(result))
 
-            await asyncio.sleep(5)
+            # Sleep on a timer.
+            await asyncio.sleep(freq.total_seconds())
 
-    async def _humble(self):
+    async def _humble(self, *, freq=timedelta(hours=5)):
         while True:
             logging.debug('Starting humbleScrape()..')
             free_games = await humbleScrape()
@@ -125,11 +126,10 @@ class JARVIS(slixmpp.ClientXMPP):
                         upsert=True
                     )
 
-            # Acts sort of like a timer.
-            logging.debug('Passing back to loop')
-            await asyncio.sleep((60*60)*5)
+            # Sleep on a timer.
+            await asyncio.sleep(freq.total_seconds())
 
-    async def _weather(self):
+    async def _weather(self, *, freq=timedelta(minutes=5)):
         while True:
             logging.debug('Checking the weather..')
             async for sub in self.db.subscribers.find({}):
@@ -178,10 +178,10 @@ class JARVIS(slixmpp.ClientXMPP):
                         # Release to loop if needed.
                         await asyncio.sleep(0)
 
-            # Repeat every 15 minutes.
-            await asyncio.sleep(60*5)
+            # Repeat on timedelta object.
+            await asyncio.sleep(freq.total_seconds())
 
-    async def _github(self):
+    async def _github(self, *, freq=timedelta(hours=12)):
         while True:
             logging.debug('Checking for new commits to known repositories..')
             async for sub in self.db.subscribers.find({}):
@@ -220,8 +220,8 @@ class JARVIS(slixmpp.ClientXMPP):
 
                             logging.debug('Upsert: {}'.format(result))
 
-            # Sleep for 12 hours.
-            await asyncio.sleep((60*60)*12)
+            # Sleep for timedelta.
+            await asyncio.sleep(freq.total_seconds())
 
     async def message(self, msg):
         # huehue
