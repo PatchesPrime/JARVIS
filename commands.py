@@ -49,27 +49,16 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
             return None
 
 
-async def addSubscriber(db, user, same_codes=None, weather_filter=None, admin=False):
+async def addSubscriber(db, user, admin=False):
     '''
     Add a subscriber to my MongoDB for notable weather alerts.
     USAGE: add_sub user@host
-
-    NOTE: valid keywords:
-        'same_codes': ['samecode1', 'samecode2']
-        'weather_filter': ['Severe', 'Unknown']
-        'admin': false
     '''
-    if same_codes is None:
-        same_codes = []
-
-    if weather_filter is None:
-        weather_filter = []
-
     result = await db.subscribers.insert_one(
         {
             'user': user,
-            'same_codes': list(same_codes),
-            'filter': list(weather_filter),
+            'same_codes': list(),
+            'filter': ['Severe', 'Unknown'],
             'admin': admin,
             'hush': {
                 'active': False,
@@ -82,6 +71,24 @@ async def addSubscriber(db, user, same_codes=None, weather_filter=None, admin=Fa
 
     # Return the ID of the inserted subscriber.
     return 'As you wish! Their uid: {}'.format(result.inserted_id)
+
+
+async def addWeatherSub(db, user, zipcode):
+    '''
+    Add weather alerts to my DB for subscriber 'user'.
+    USAGE: alert_sub test@user 55555
+    '''
+    zipcode = await getSAMECode(zipcode)
+    result = await db.subscribers.update_one(
+        {'user': str(user)},
+        {'$push': {'same_codes': zipcode}},
+        upsert=True
+    )
+
+    if result.modified_count:
+        return 'Added the SAME ({}) and will alert if needed.'.format(zipcode)
+
+    raise UserWarning('Something went wrong, please contact an admin..')
 
 
 async def deleteSubscriber(db, user):
