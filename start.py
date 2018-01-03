@@ -4,7 +4,7 @@ import slixmpp
 import logging
 import asyncio
 import msgpack
-import inspect
+from inspect import signature
 from datetime import datetime, timedelta
 import config
 from agents.humble import humbleScrape
@@ -251,8 +251,10 @@ class JARVIS(slixmpp.ClientXMPP):
 
             # Command logic.
             if await self._isAdmin(msg['from'].bare) or cmd in safeCommands:
-                # That's a doozy, ain't it?
-                if 'db' in inspect.signature(self.usable_functions[cmd]):
+                # Honestly not acceptable. I'm creating bloat.
+                params = signature(self.usable_functions[cmd]).parameters
+
+                if 'db' in params.keys():
                     resp = await self.usable_functions[cmd](self.db, *args)
                     msg.reply(resp).send()
                 else:
