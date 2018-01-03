@@ -78,15 +78,17 @@ async def addWeatherSub(db, user, zipcode):
     Add weather alerts to my DB for subscriber 'user'.
     USAGE: alert_sub test@user 55555
     '''
-    zipcode = await getSAMECode(zipcode)
+    same = await getSAMECode(zipcode)  # Get the SAME.
+    same = same.split()[-1]  # Chop it up.
+
     result = await db.subscribers.update_one(
         {'user': str(user)},
-        {'$push': {'same_codes': zipcode}},
+        {'$push': {'same_codes': same}},
         upsert=True
     )
 
     if result.modified_count:
-        return 'Added the SAME ({}) and will alert if needed.'.format(zipcode)
+        return 'Added SAME ({}) to DB and will alert if needed.'.format(same)
 
     raise UserWarning('Something went wrong, please contact an admin..')
 
