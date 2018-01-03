@@ -4,7 +4,7 @@ import slixmpp
 import logging
 import asyncio
 import msgpack
-import json
+import inspect
 from datetime import datetime, timedelta
 import config
 from agents.humble import humbleScrape
