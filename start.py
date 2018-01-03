@@ -256,7 +256,7 @@ class JARVIS(slixmpp.ClientXMPP):
 
             msg.reply('You\'ve not been granted permissions for that.').send()
 
-        except (UserWarning, KeyError) as e:
+        except (UserWarning, KeyError, SyntaxError) as e:
             if type(e).__name__ == 'KeyError':
                 end = 'My available commands:\n'
                 for k, v in self.usable_functions.items():
@@ -265,7 +265,7 @@ class JARVIS(slixmpp.ClientXMPP):
                     msg.reply(end).send()
             else:
                 # Actual command failure
-                msg.reply(e).send()
+                msg.reply(e.message).send()
 
 
 async def handle_serviceMessage(reader, writer):
