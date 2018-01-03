@@ -31,6 +31,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'gitwatch': commands.addGitSub,
             'delgit': commands.delGitSub,
             'solve': commands.solveMath,
+            'alert': commands.addWeatherSub,
         }
 
         # Now we use our authentication.
