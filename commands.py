@@ -305,8 +305,8 @@ async def getSAMECode(place):
             # return anything. One day I'll know why.
             logging.warn('IndexError: {}'.format(e))
             message = ('Something went wrong, likely googles fault',
-                       ' or perhaps invalid zipcode..')
-            raise UserWarning(message)
+                       'or perhaps invalid zipcode..')
+            raise UserWarning(' '.join(message))
 
         # Forgive me padre for I have sinned.
         # types = {y for x in comps for y in x['types']}
@@ -353,8 +353,8 @@ async def getSAMECode(place):
                 except IndexError as e:
                     logging.warn('IndexError: {}'.format(e))
                     message = ('Something went wrong, likely googles fault',
-                               ' or perhaps invalid zipcode..')
-                    raise UserWarning(message)
+                               'or perhaps invalid zipcode..')
+                    raise UserWarning(' '.join(message))
 
                 for com in comp:
                     if 'administrative_area_level_2' in com['types']:
