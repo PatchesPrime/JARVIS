@@ -265,7 +265,7 @@ class JARVIS(slixmpp.ClientXMPP):
                     msg.reply(end).send()
             else:
                 # Actual command failure
-                msg.reply(e.message).send()
+                msg.reply(str(e)).send()
 
 
 async def handle_serviceMessage(reader, writer):
