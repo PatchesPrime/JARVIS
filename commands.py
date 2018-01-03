@@ -53,9 +53,8 @@ async def addSubscriber(db, user, same_codes=None, weather_filter=None, admin=Fa
     '''
     Add a subscriber to my MongoDB for notable weather alerts.
     USAGE: add_sub user@host
-    USAGE: add_sub user@host add_sub test@test {"admin": true}
 
-    NOTE: valid JSON attributes:
+    NOTE: valid keywords:
         'same_codes': ['samecode1', 'samecode2']
         'weather_filter': ['Severe', 'Unknown']
         'admin': false

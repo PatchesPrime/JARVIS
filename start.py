@@ -252,7 +252,11 @@ class JARVIS(slixmpp.ClientXMPP):
             # Command logic.
             if await self._isAdmin(msg['from'].bare) or cmd in safeCommands:
                 # That's a doozy, ain't it?
-                msg.reply(await self.usable_functions[cmd](*args)).send()
+                if 'db' in locals(self.usable_functions[cmd]).keys():
+                    resp = await self.usable_functions[cmd](self.db, *args)
+                    msg.reply(resp).send()
+                else:
+                    msg.reply(await self.usable_functions[cmd](*args)).send()
 
             else:
                 msg.reply('Invalid permissions for that command.').send()
