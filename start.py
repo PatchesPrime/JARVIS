@@ -263,7 +263,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 for k, v in self.usable_functions.items():
                     end += '{0}\n{1}\n'.format(k, v.__doc__)
 
-                    msg.reply(end).send()
+                msg.reply(end).send()
             else:
                 # Actual command failure
                 msg.reply(str(e)).send()
