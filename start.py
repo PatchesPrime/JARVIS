@@ -252,7 +252,7 @@ class JARVIS(slixmpp.ClientXMPP):
             # Command logic.
             if await self._isAdmin(msg['from'].bare) or cmd in safeCommands:
                 # That's a doozy, ain't it?
-                if 'db' in locals(self.usable_functions[cmd]).keys():
+                if 'db' in inspect.signature(self.usable_functions[cmd]):
                     resp = await self.usable_functions[cmd](self.db, *args)
                     msg.reply(resp).send()
                 else:
