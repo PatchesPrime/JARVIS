@@ -304,7 +304,9 @@ async def getSAMECode(place):
             # Occasionally the Google Geocode API randomly doesn't
             # return anything. One day I'll know why.
             logging.warn('IndexError: {}'.format(e))
-            return None
+            message = ('Something went wrong, likely googles fault',
+                       ' or perhaps invalid zipcode..')
+            raise UserWarning(message)
 
         # Forgive me padre for I have sinned.
         # types = {y for x in comps for y in x['types']}
@@ -315,9 +317,6 @@ async def getSAMECode(place):
 
                 # I baby this loop.
                 await asyncio.sleep(0)
-
-            # srsly
-            await asyncio.sleep(0)
 
         # PEP8 pls
         if 'administrative_area_level_2' in types:
@@ -353,7 +352,9 @@ async def getSAMECode(place):
                     comp = request['results'][0]['address_components']
                 except IndexError as e:
                     logging.warn('IndexError: {}'.format(e))
-                    return None
+                    message = ('Something went wrong, likely googles fault',
+                               ' or perhaps invalid zipcode..')
+                    raise UserWarning(message)
 
                 for com in comp:
                     if 'administrative_area_level_2' in com['types']:
@@ -369,4 +370,4 @@ async def getSAMECode(place):
                     return 'The code, sir: {}'.format(codes[county + state])
                 except UnboundLocalError:
                     # We couldn't find the county, sadly.
-                    raise KeyError('Couldn\'t get your county..')
+                    raise UserWarning('Couldn\'t get your county..')
