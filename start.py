@@ -246,8 +246,14 @@ class JARVIS(slixmpp.ClientXMPP):
 
         # Command processing.
         try:
+            # We really only have the one public command..
+            if not await self._isAdmin(msg['from'].bare) and cmd != 'solve':
+                msg.reply('You\'re not permitted to do that.').send()
+                return
+
             # That's a doozy, ain't it?
             msg.reply(await self.usable_functions[cmd](*args)).send()
+
         except (UserWarning, KeyError) as e:
             if type(e).__name__ == 'KeyError':
                 end = 'My available commands:\n'
