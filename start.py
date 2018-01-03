@@ -246,13 +246,18 @@ class JARVIS(slixmpp.ClientXMPP):
 
         # Command processing.
         try:
-            msg.reply(self.usable_functions[cmd](*args))
-        except UserWarning as e:
-            end = 'My available commands:\n'
-            for k, v in self.usable_functions.items():
-                end += '{0}\n{1}\n'.format(k, v.__doc__)
+            # That's a doozy, ain't it?
+            msg.reply(await self.usable_functions[cmd](*args)).send()
+        except (UserWarning, KeyError) as e:
+            if type(e).__name__ == 'KeyError':
+                end = 'My available commands:\n'
+                for k, v in self.usable_functions.items():
+                    end += '{0}\n{1}\n'.format(k, v.__doc__)
 
-            msg.reply(end).send()
+                    msg.reply(end).send()
+            else:
+                # Actual command failure
+                msg.reply(e).send()
 
 
 async def handle_serviceMessage(reader, writer):
