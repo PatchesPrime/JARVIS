@@ -21,16 +21,16 @@ class JARVIS(slixmpp.ClientXMPP):
 
         # Commands available for use, with help strings.
         self.usable_functions = {
-            'register_user': commands.registerUser.__doc__,
-            'delete_user': commands.deleteUser.__doc__,
-            'update_user': commands.updateUser.__doc__,
-            'add_sub': commands.addSubscriber.__doc__,
-            'del_sub': commands.deleteSubscriber.__doc__,
-            'hush': commands.hush.__doc__,
-            'same': commands.getSAMECode.__doc__,
-            'gitwatch': commands.addGitSub.__doc__,
-            'delgit': commands.delGitSub.__doc__,
-            'solve': commands.solveMath.__doc__,
+            'register_user': commands.registerUser,
+            'delete_user': commands.deleteUser,
+            'update_user': commands.updateUser,
+            'add_sub': commands.addSubscriber,
+            'del_sub': commands.deleteSubscriber,
+            'hush': commands.hush,
+            'same': commands.getSAMECode,
+            'gitwatch': commands.addGitSub,
+            'delgit': commands.delGitSub,
+            'solve': commands.solveMath,
         }
 
         # Now we use our authentication.
@@ -245,144 +245,12 @@ class JARVIS(slixmpp.ClientXMPP):
         await self.db.messages.insert_one(casted_msg)
 
         # Command processing.
-        if cmd == 'register_user' and await self._isAdmin(msg['from'].bare):
-            if len(args) >= 2:
-                req = await commands.registerUser(*args)
-                if req == 201:
-                    msg.reply('Registered the requested user.').send()
-                else:
-                    msg.reply('Apologies, but there was an error.').send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'delete_user' and await self._isAdmin(msg['from'].bare):
-            if len(args) == 1:
-                req = await commands.deleteUser(args[0])
-                if req == 200:
-                    msg.reply('Removed {0}\'s credentials.'.format(
-                        args[0])).send()
-                else:
-                    msg.reply('Apologies; an error has occured..').send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'update_user' and await self._isAdmin(msg['from'].bare):
-            if len(args) >= 1:
-                # Build a payload out of the arguments list in JSON.
-                try:
-                    args_payload = json.loads(' '.join(args[1:]))
-                except ValueError as e:
-                    # The things I do for PEP8.
-                    body = (
-                        'Sorry, you\'ve provided me with invalid JSON:',
-                        ' {0}'.format(e)  # A bit verbose, but accurate.
-                    )
-
-                    # Send and return.
-                    msg.reply(body).send()
-                    return
-
-                # Otherwise, process the command.
-                req = await commands.updateUser(args[0], args_payload)
-                if req == 200:
-                    msg.reply('Updated the user.').send()
-                else:
-                    msg.reply('Forgive me, but there was an error..').send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'hush' and await self._isAdmin(msg['from'].bare):
-            if len(args) == 1:
-                logging.debug('Hushing {}'.format(args[0]))
-
-                # Sometimes I over do it, but I stick to the PEPs for
-                # consistencies sake.
-                msg.reply(
-                    'Okay, sorry for the bother. Back in {} hours.'.format(
-                        args[0]
-                    )
-                ).send()
-                await commands.hush(self.db, msg['from'].bare, args[0])
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'add_sub' and await self._isAdmin(msg['from'].bare):
-            if len(args) == 1:
-                logging.debug('Adding sub with {}'.format(args))
-                msg.reply('Added subscriber with unique ID: {}'.format(
-                    await commands.addSubscriber(self.db, args[0])
-                )).send()
-            elif len(args) >= 2:
-                kwargs = json.loads(''.join(args[1:]))
-                logging.debug('Adding sub with kwargs: {}'.format(kwargs))
-
-                msg.reply('Added subscriber with unique ID: {}'.format(
-                    await commands.addSubscriber(self.db, args[0], **kwargs)
-                )).send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'del_sub' and await self._isAdmin(msg['from'].bare):
-            if len(args) == 1:
-                logging.debug('Removing sub {}'.format(args))
-                msg.reply('Removed {} matching "{}"'.format(
-                    await commands.deleteSubscriber(self.db, args[0]),
-                    args[0]
-                )).send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'gitwatch' and await self._isAdmin(msg['from'].bare):
-            if len(args) == 2:
-                logging.debug(
-                    'Adding git {} to {}'.format(args[1], msg['from'].bare)
-                )
-                msg.reply('Added {} git subscriptions.'.format(
-                    await commands.addGitSub(self.db, msg['from'].bare, *args)
-                )).send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'delgit' and await self._isAdmin(msg['from'].bare):
-            if len(args) == 2:
-                logging.debug(
-                    'Deleting git {} to {}'.format(args[1], msg['from'].bare)
-                )
-                msg.reply('Deleted {} git subscriptions.'.format(
-                    await commands.delGitSub(self.db, msg['from'].bare, *args)
-                )).send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'same' and await self._isAdmin(msg['from'].bare):
-            if len(args) == 1:
-                logging.debug('Retrieving SAME for {}'.format(msg['from']))
-                try:
-                    msg.reply('Certainly, the code requested: {}'.format(
-                        await commands.getSAMECode(args[0])
-                    )).send()
-                except KeyError:
-                    msg.reply('Apologies, I can\'t find that code').send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        elif cmd == 'solve':
-            if len(args) == 1:
-                logging.debug('Solving math problem {}'.format(args))
-                try:
-                    msg.reply('Certainly, your answer is:: {}'.format(
-                        await commands.solveMath(args[0])
-                    )).send()
-                except SyntaxError as e:
-                    logging.debug(e)
-                    msg.reply('Terribly sorry. Something went wrong.').send()
-            else:
-                msg.reply(self.usable_functions[cmd]).send()
-
-        else:
+        try:
+            msg.reply(self.usable_functions[cmd](*args))
+        except UserWarning as e:
             end = 'My available commands:\n'
             for k, v in self.usable_functions.items():
-                end += '{0}\n{1}\n'.format(k, v)
+                end += '{0}\n{1}\n'.format(k, v.__doc__)
 
             msg.reply(end).send()
 

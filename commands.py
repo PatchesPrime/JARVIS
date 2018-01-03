@@ -82,7 +82,7 @@ async def addSubscriber(db, user, same_codes=None, weather_filter=None, admin=Fa
     )
 
     # Return the ID of the inserted subscriber.
-    return result.inserted_id
+    return 'As you wish! Their uid: {}'.format(result.inserted_id)
 
 
 async def deleteSubscriber(db, user):
@@ -96,7 +96,7 @@ async def deleteSubscriber(db, user):
         }
     )
 
-    return result.deleted_count
+    return 'Certainly. {} users removed.'.format(result.deleted_count)
 
 
 async def addGitSub(db, user, gituser, gitrepo):
@@ -113,7 +113,12 @@ async def addGitSub(db, user, gituser, gitrepo):
         upsert=True
     )
 
-    return result.modified_count
+    if result.modified_count:
+        return 'Git repo {}/{} added to my entry for {}'.format(
+            gituser, gitrepo, user
+        )
+
+    raise UserWarning('Something went wrong adding git repo..')
 
 
 async def delGitSub(db, user, gituser, gitrepo):
@@ -128,7 +133,12 @@ async def delGitSub(db, user, gituser, gitrepo):
         {'$pull': {'git': {'user': str(gituser), 'repo': str(gitrepo)}}},
     )
 
-    return result.modified_count
+    if result.modified_count:
+        return 'Removed {}/{} repo from {} entry..'.format(
+            gituser, gitrepo, user
+        )
+
+    raise UserWarning('Could not remove repo from {} entry.'.format(user))
 
 
 async def registerUser(user, pwd):
@@ -143,7 +153,12 @@ async def registerUser(user, pwd):
     }
 
     req = await runREST('post', 'users', payload=payload)
-    return req.status
+
+    if req.status == 201:
+        return 'User {} has been registered'.format(user)
+
+    # Fail case, throw predictable exception.
+    raise UserWarning('Something went wrong in adding the user..')
 
 
 async def deleteUser(user):
@@ -155,7 +170,10 @@ async def deleteUser(user):
     endpoint = 'users/{0}'.format(user)
     req = await runREST('delete', endpoint)
 
-    return req.status
+    if req.status == 200:
+        return 'Destroyed \'{}\' user credentials'.format(user)
+
+    raise UserWarning('Couldn\'t remove user..')
 
 
 async def updateUser(user, payload):
@@ -172,11 +190,13 @@ async def updateUser(user, payload):
     '''
     api = 'users/{0}'.format(user)
 
-    # Empty payload to work with.
-
+    # Trust that it's JSON.
     req = await runREST('put', api, payload=payload)
 
-    return req.status
+    if req.status == 200:
+        return '{}\'s credentials have been updated.'.format(user)
+
+    raise UserWarning('Something went wrong..')
 
 
 async def hush(db, user, timeout):
@@ -197,6 +217,8 @@ async def hush(db, user, timeout):
             }
         }
     )
+
+    return 'Certainly, I\'ll leave you alone for {} hours.'.format(timeout)
 
 
 async def readFile(filename, loop=None):
@@ -249,7 +271,11 @@ async def solveMath(expr):
     result = str(result)
     if 'zoo' in result:
         result = "ZeroDivisionError"
-    return result
+
+    if result:
+        return 'Here is my solution: {}'.format(result)
+
+    raise UserWarning('I couldn\'t solve the problem..sorry :(')
 
 
 async def getSAMECode(place):
@@ -305,7 +331,7 @@ async def getSAMECode(place):
                 # More babying of loops.
                 await asyncio.sleep(0)
 
-            return codes[county + state]
+            return 'Requested code, sir: {}'.format(codes[county + state])
 
         else:
             for com in comps:
@@ -340,7 +366,7 @@ async def getSAMECode(place):
                     await asyncio.sleep(0)
 
                 try:
-                    return codes[county + state]
+                    return 'The code, sir: {}'.format(codes[county + state])
                 except UnboundLocalError:
                     # We couldn't find the county, sadly.
                     raise KeyError('Couldn\'t get your county..')
