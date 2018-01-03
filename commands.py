@@ -59,7 +59,7 @@ async def addSubscriber(db, user, admin=False):
             'user': user,
             'same_codes': list(),
             'filter': ['Severe', 'Unknown'],
-            'admin': admin,
+            'admin': bool(admin),
             'hush': {
                 'active': False,
                 'started': datetime.now(),
