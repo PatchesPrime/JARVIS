@@ -55,7 +55,7 @@ async def humbleScrape():
 
 async def agent(*, freq=timedelta(hours=5)):
     while True:
-        logging.debug('Starting humbleScrape()..')
+        logging.debug('Checking humblebundle..')
         free_games = await humbleScrape()
 
         if free_games:

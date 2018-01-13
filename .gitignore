@@ -2,3 +2,5 @@
 .*__pycache__.*
 /config.py
 /config.py~
+*.#*
+*_flymake.py
