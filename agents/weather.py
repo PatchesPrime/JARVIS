@@ -1,6 +1,19 @@
 import json
 import aiohttp
 import logging
+import asyncio
+import msgpack
+from socket import create_connection
+from datetime import timedelta
+import config
+import motor.motor_asyncio
+
+mongo = motor.motor_asyncio.AsyncIOMotorClient()
+db = mongo.bot
+db.authenticate(
+    config.mongo_user,
+    config.mongo_pass,
+)
 
 
 async def getWeather(same):
@@ -41,3 +54,59 @@ async def getWeather(same):
     # Seriously forgive me padre, pls.
     return [x for x in request
             if same in x['properties']['geocode']['SAME']]
+
+
+async def agent(*, freq=timedelta(minutes=5)):
+    while True:
+        logging.debug('Checking the weather..')
+        async for sub in db.subscribers.find({}):
+            if sub['hush']['active']:
+                logging.debug('{} hushed me, skipping'.format(sub['user']))
+                continue
+
+            for location in sub['same_codes']:
+                data = await getWeather(location)
+
+                # Just stop here if no alerts.
+                if len(data) is 0:
+                    continue
+
+                # Try not to send duplicate alerts.
+                ids = await db.alerts.distinct('properties.id')
+
+                # Actual processing.
+                for alert in data:
+                    if alert['properties']['id'] not in ids:
+                        db.alerts.insert_one(alert)
+
+                        # PEP8
+                        severity = alert['properties']['severity']
+
+                        if severity in sub['filter']:
+                            # Easier on the character count.
+                            headline = alert['properties']['headline']
+                            statement = alert['properties']['description']
+
+                            # The horror
+                            logging.info(
+                                '{} for {}'.format(
+                                    headline, sub['user']
+                                )
+                            )
+
+                            # Message payload
+                            payload = {
+                                'to': sub['user'],
+                                'msg': '{}\n\n{}'.format(headline, statement),
+                            }
+
+                            # Pass the infomration to Jarvis.
+                            sock = create_connection(('192.168.1.200', 8888))
+                            sock.send(msgpack.packb(payload))
+                            sock.close()
+
+                    # Release to loop if needed.
+                    await asyncio.sleep(0)
+
+        # Repeat on timedelta object.
+        await asyncio.sleep(freq.total_seconds())
