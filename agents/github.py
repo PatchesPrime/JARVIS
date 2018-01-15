@@ -83,5 +83,8 @@ async def agent(db, *, freq=timedelta(hours=12)):
 
                         logging.debug('Upsert: {}'.format(result))
 
+        logging.debug(
+            'agent.github sleeping for {}'.format(freq.total_seconds())
+        )
         # Sleep for timedelta.
         await asyncio.sleep(freq.total_seconds())
