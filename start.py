@@ -7,7 +7,6 @@ import msgpack
 from inspect import signature
 from datetime import datetime, timedelta
 import config
-from agents.github import getCommits
 
 
 class JARVIS(slixmpp.ClientXMPP):
