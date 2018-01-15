@@ -7,8 +7,6 @@ import msgpack
 from inspect import signature
 from datetime import datetime, timedelta
 import config
-from agents.humble import humbleScrape
-from agents.weather import getWeather
 from agents.github import getCommits
 
 
@@ -34,17 +32,17 @@ class JARVIS(slixmpp.ClientXMPP):
             'alert': commands.addWeatherSub,
         }
 
-        # Now we use our authentication.
+        # Get a mongodb client and db
         mongo = motor.motor_asyncio.AsyncIOMotorClient()
-
-        # Assign and authenticate.
         self.db = mongo.bot
-        self.db.authenticate(
+
+    async def start(self, event):
+        # This should be awaited. Check commit.
+        await self.db.authenticate(
             config.mongo_user,
             config.mongo_pass,
         )
 
-    async def start(self, event):
         self.send_presence()
         self.get_roster()
 
@@ -77,109 +75,6 @@ class JARVIS(slixmpp.ClientXMPP):
                     logging.debug('Unhushed {}'.format(result))
 
             # Sleep on a timer.
-            await asyncio.sleep(freq.total_seconds())
-
-    async def _humble(self, *, freq=timedelta(hours=5)):
-        while True:
-            logging.debug('Starting humbleScrape()..')
-            free_games = await humbleScrape()
-
-            if free_games:
-                store = 'https://humblebundle.com/store/'
-
-                for game in free_games:
-                    pattern = {
-                        'human_url': game['human_url'],
-                        'sale_end': game['sale_end']
-                    }
-
-                    # Have we seen this sale?
-                    if await self.db.games.find_one(pattern):
-                        # Skip this game.
-                        continue
-
-                    # I hate the way this is not just a dictionary.
-                    # Why library author? Why?
-                    for friend in self.client_roster:
-                        subtype = self.client_roster[friend]['subscription']
-                        if subtype == 'both':
-                            # PEP8 is responsible for this.
-                            # I just can't help myself.
-                            self.send_message(
-                                mto=friend,
-                                mtype='chat',
-                                mbody='FREE GAME: {}\n{}{}'.format(
-                                    game['human_name'],
-                                    store, game['human_url']
-                                )
-                            )
-                        await asyncio.sleep(0)  # async sleep just in case
-
-                    await self.db.games.update_one(
-                        {'human_url': game['human_url']},
-                        {
-                            # Flymake was complaining now it's not.
-                            '$set': {
-                                'sale_end': game['sale_end'],
-                                'human_name': game['human_name']
-                            }
-                        },
-                        upsert=True
-                    )
-
-            # Sleep on a timer.
-            await asyncio.sleep(freq.total_seconds())
-
-    async def _weather(self, *, freq=timedelta(minutes=5)):
-        while True:
-            logging.debug('Checking the weather..')
-            async for sub in self.db.subscribers.find({}):
-                if sub['hush']['active']:
-                    logging.debug('{} hushed me, skipping'.format(sub['user']))
-                    continue
-
-                for location in sub['same_codes']:
-                    data = await getWeather(location)
-
-                    # Just stop here if no alerts.
-                    if len(data) is 0:
-                        continue
-
-                    # Try not to send duplicate alerts.
-                    ids = await self.db.alerts.distinct('properties.id')
-
-                    # Actual processing.
-                    for alert in data:
-                        if alert['properties']['id'] not in ids:
-                            self.db.alerts.insert_one(alert)
-
-                            # PEP8
-                            severity = alert['properties']['severity']
-
-                            if severity in sub['filter']:
-                                # Easier on the character count.
-                                headline = alert['properties']['headline']
-                                statement = alert['properties']['description']
-
-                                # The horror
-                                logging.info(
-                                    '{} for {}'.format(
-                                        headline, sub['user']
-                                    )
-                                )
-
-                                # Send the message.
-                                self.send_message(
-                                    mto=sub['user'],
-                                    mtype='chat',
-                                    mbody='{}\n\n{}'.format(
-                                        headline, statement
-                                    )
-                                )
-                        # Release to loop if needed.
-                        await asyncio.sleep(0)
-
-            # Repeat on timedelta object.
             await asyncio.sleep(freq.total_seconds())
 
     async def _github(self, *, freq=timedelta(hours=12)):
