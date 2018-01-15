@@ -48,8 +48,6 @@ class JARVIS(slixmpp.ClientXMPP):
 
         # Add our agents to the loop. Also I feel a little dirty doing this.
         asyncio.ensure_future(self._hush())
-        asyncio.ensure_future(self._humble())
-        asyncio.ensure_future(self._weather())
         asyncio.ensure_future(self._github())
 
     async def _isAdmin(self, user):
