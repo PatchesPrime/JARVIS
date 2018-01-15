@@ -101,5 +101,10 @@ async def agent(*, freq=timedelta(hours=5)):
                 sock.send(msgpack.packb(payload))
                 sock.close()
 
+        # PEP8 pls
+        logging.debug(
+            'agents.humble sleeping {} seconds'.format(freq.total_seconds())
+        )
+
         # Sleep on a timer.
         await asyncio.sleep(freq.total_seconds())

@@ -108,5 +108,10 @@ async def agent(*, freq=timedelta(minutes=5)):
                     # Release to loop if needed.
                     await asyncio.sleep(0)
 
+        # 79 character limit...
+        logging.debug(
+            'agents.weather sleeping {} seconds'.format(freq.total_seconds())
+        )
+
         # Repeat on timedelta object.
         await asyncio.sleep(freq.total_seconds())
