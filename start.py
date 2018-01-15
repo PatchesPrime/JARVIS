@@ -46,9 +46,8 @@ class JARVIS(slixmpp.ClientXMPP):
         self.send_presence()
         self.get_roster()
 
-        # Add our agents to the loop. Also I feel a little dirty doing this.
+        # Watch for hushes.
         asyncio.ensure_future(self._hush())
-        asyncio.ensure_future(self._github())
 
     async def _isAdmin(self, user):
         # Async List Comprehensions and PEP8 formatting
@@ -73,48 +72,6 @@ class JARVIS(slixmpp.ClientXMPP):
                     logging.debug('Unhushed {}'.format(result))
 
             # Sleep on a timer.
-            await asyncio.sleep(freq.total_seconds())
-
-    async def _github(self, *, freq=timedelta(hours=12)):
-        while True:
-            logging.debug('Checking for new commits to known repositories..')
-            async for sub in self.db.subscribers.find({}):
-                for info in sub['git']:
-                    logging.debug('GIT: {}'.format(info))
-
-                    # Known repository specific commits.
-                    known = await self.db.git.distinct(
-                        'commits.id',
-                        {'id': '{user}/{repo}'.format(**info)}
-                    )
-
-                    # Request the data.
-                    data = await getCommits(info['user'], info['repo'])
-
-                    for commit in data:
-                        if commit['id'] not in known:
-                            # Prevents spam on first lookup of repo.
-                            if len(known) >= 1:
-                                self.send_message(
-                                    mto=sub['user'],
-                                    mtype='chat',
-                                    mbody='New commit {}/{}: {}\n{}'.format(
-                                        info['user'],
-                                        info['repo'],
-                                        commit['message'],
-                                        commit['url']
-                                    )
-                                )
-
-                            result = await self.db.git.update(
-                                {'id': '{user}/{repo}'.format(**info)},
-                                {'$push': {'commits': commit}},
-                                upsert=True
-                            )
-
-                            logging.debug('Upsert: {}'.format(result))
-
-            # Sleep for timedelta.
             await asyncio.sleep(freq.total_seconds())
 
     async def message(self, msg):

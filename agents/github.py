@@ -1,4 +1,9 @@
 import aiohttp
+import asyncio
+import msgpack
+import logging
+from datetime import timedelta
+from socket import create_connection
 import config
 
 
@@ -30,3 +35,53 @@ async def getCommits(user, repo):
             ]
 
             return data
+
+
+async def agent(db, *, freq=timedelta(hours=12)):
+    while True:
+        logging.debug('Checking for new commits to known repositories..')
+        async for sub in db.subscribers.find({}):
+            for info in sub['git']:
+                logging.debug('GIT: {}'.format(info))
+
+                # Known repository specific commits.
+                known = await db.git.distinct(
+                    'commits.id',
+                    {'id': '{user}/{repo}'.format(**info)}
+                )
+
+                # Request the data.
+                data = await getCommits(info['user'], info['repo'])
+
+                for commit in data:
+                    if commit['id'] not in known:
+                        # Prevents spam on first lookup of repo.
+                        if len(known) >= 1:
+                            msg = 'New commit {}/{}: {}\n{}'.format(
+                                info['user'],
+                                info['repo'],
+                                commit['message'],
+                                commit['url']
+                            )
+                            payload = {
+                                'to': sub['user'],
+                                'msg': msg,
+                            }
+
+                            logging.debug('payload={}'.format(payload))
+
+                            # Pass the infomration to Jarvis.
+                            sock = create_connection(('192.168.1.200', 8888))
+                            sock.send(msgpack.packb(payload))
+                            sock.close()
+
+                        result = await db.git.update(
+                            {'id': '{user}/{repo}'.format(**info)},
+                            {'$push': {'commits': commit}},
+                            upsert=True
+                        )
+
+                        logging.debug('Upsert: {}'.format(result))
+
+        # Sleep for timedelta.
+        await asyncio.sleep(freq.total_seconds())
