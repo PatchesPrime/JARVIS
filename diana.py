@@ -1,14 +1,36 @@
 import asyncio
+import os
 import logging
-from agents import humble, weather
+import importlib.util
+
+
+# Build a list of functions from the modules in agents folder.
+runners = list()
+for name in os.listdir('./agents'):
+    if name.endswith('.py') and not name.startswith('_'):
+        # This is the actual module name
+        safe_name = 'agents.' + name[:-3]
+
+        # Get a spec from it
+        spec = importlib.util.find_spec(safe_name)
+
+        # Get the module
+        module = importlib.util.module_from_spec(spec)
+
+        # Execute it
+        spec.loader.exec_module(module)
+
+        if hasattr(module, 'agent'):
+            runners.append(getattr(module, 'agent'))
 
 
 async def main():
-    asyncio.ensure_future(humble.agent())
-    # asyncio.ensure_future(weather.agent())
+    # Ensure the future of all our agents.
+    for f in runners:
+        asyncio.ensure_future(f())
 
     # Wait for all to finish before closing up.
-    asyncio.gather(*asyncio.Task.all_tasks())
+    await asyncio.gather(*asyncio.Task.all_tasks())
 
 
 if __name__ == '__main__':
