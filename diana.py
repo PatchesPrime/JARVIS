@@ -2,6 +2,8 @@ import asyncio
 import os
 import logging
 import importlib.util
+import motor.motor_asyncio
+import config
 
 
 # Build a list of functions from the modules in agents folder.
@@ -25,9 +27,18 @@ for name in os.listdir('./agents'):
 
 
 async def main():
+    mongo = motor.motor_asyncio.AsyncIOMotorClient()
+    db = mongo.bot
+    await db.authenticate(
+        config.mongo_user,
+        config.mongo_pass,
+    )
+
     # Ensure the future of all our agents.
     for f in runners:
-        asyncio.ensure_future(f())
+        # Note: just make db an optional paramter if we don't
+        # need one for an agent. Currently we do.
+        asyncio.ensure_future(f(db))
 
     # Wait for all to finish before closing up.
     await asyncio.gather(*asyncio.Task.all_tasks())

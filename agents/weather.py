@@ -5,15 +5,6 @@ import asyncio
 import msgpack
 from socket import create_connection
 from datetime import timedelta
-import config
-import motor.motor_asyncio
-
-mongo = motor.motor_asyncio.AsyncIOMotorClient()
-db = mongo.bot
-db.authenticate(
-    config.mongo_user,
-    config.mongo_pass,
-)
 
 
 async def getWeather(same):
@@ -56,7 +47,7 @@ async def getWeather(same):
             if same in x['properties']['geocode']['SAME']]
 
 
-async def agent(*, freq=timedelta(minutes=5)):
+async def agent(db, *, freq=timedelta(minutes=5)):
     while True:
         logging.debug('Checking the weather..')
         async for sub in db.subscribers.find({}):

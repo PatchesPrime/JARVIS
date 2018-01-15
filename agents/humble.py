@@ -5,15 +5,6 @@ import asyncio
 import msgpack
 from socket import create_connection
 from datetime import timedelta
-import config
-import motor.motor_asyncio
-
-mongo = motor.motor_asyncio.AsyncIOMotorClient()
-db = mongo.bot
-db.authenticate(
-    config.mongo_user,
-    config.mongo_pass,
-)
 
 
 async def humbleScrape():
@@ -53,7 +44,7 @@ async def humbleScrape():
             return []
 
 
-async def agent(*, freq=timedelta(hours=5)):
+async def agent(db, *, freq=timedelta(hours=5)):
     while True:
         logging.debug('Checking humblebundle..')
         free_games = await humbleScrape()
