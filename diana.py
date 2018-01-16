@@ -46,7 +46,7 @@ async def main():
 
 if __name__ == '__main__':
     # Setup logging.
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format='%(levelname)-8s %(message)s')
 
     # Get loop and run main() on it.
