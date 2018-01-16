@@ -48,6 +48,22 @@ class JARVIS(slixmpp.ClientXMPP):
         # Watch for hushes.
         asyncio.ensure_future(self._hush())
 
+    async def notifyUser(self, user, msg):
+        '''Simple helper method for me.'''
+        # PEP8 79 character pls help
+        hushed = [
+            x['user'] async for x in self.db.subscribers.find(
+                {'user': user, 'hush.active': True}
+            )
+        ]
+
+        if len(hushed) == 0:
+            xmpp.send_message(
+                mto=user,
+                mtype='chat',
+                mbody=msg,
+            )
+
     async def _isAdmin(self, user):
         # Async List Comprehensions and PEP8 formatting
         admin = [
@@ -155,19 +171,10 @@ async def handle_serviceMessage(reader, writer):
                     if subtype != 'both':
                         continue
 
-                    xmpp.send_message(
-                        mto=friend,
-                        mtype='chat',
-                        mbody=data['msg']
-                    )
+                    await xmpp.notifyUser(friend, data['msg'])
 
             else:
-                # Send the message.
-                xmpp.send_message(
-                    mto=data['to'],
-                    mtype='chat',
-                    mbody=data['msg']
-                )
+                await xmpp.notifyUser(data['to'], data['msg'])
 
     except msgpack.exceptions.UnpackValueError as e:
         # Something went wrong, likely an empty message.
