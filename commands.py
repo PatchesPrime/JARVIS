@@ -211,7 +211,7 @@ async def hush(db, user, timeout):
     '''
     Silence to bot for the specified time in hours.
 
-    USAGE: hush 4
+    USAGE: hush your@user.org 4
     '''
     await db.subscribers.update_one(
         {'user': user},
