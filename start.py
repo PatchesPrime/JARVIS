@@ -145,12 +145,29 @@ async def handle_serviceMessage(reader, writer):
         if len(data) > 0:
             data = msgpack.unpackb(data, encoding='utf-8')
 
-            # Send the message.
-            xmpp.send_message(
-                mto=data['to'],
-                mtype='chat',
-                mbody=data['msg']
-            )
+            if data['to'] == 'all_friends':
+                # This should be a dictionary and it's not. Why?
+                # Come on library developer :(
+                for friend in xmpp.client_roster:
+                    subtype = xmpp.client_roster[friend]['subscription']
+
+                    # If they aren't mutual friends with Jarvis, skip
+                    if subtype != 'both':
+                        continue
+
+                    xmpp.send_message(
+                        mto=friend,
+                        mtype='chat',
+                        mbody=data['msg']
+                    )
+
+            else:
+                # Send the message.
+                xmpp.send_message(
+                    mto=data['to'],
+                    mtype='chat',
+                    mbody=data['msg']
+                )
 
     except msgpack.exceptions.UnpackValueError as e:
         # Something went wrong, likely an empty message.
