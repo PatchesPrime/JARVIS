@@ -58,10 +58,10 @@ class JARVIS(slixmpp.ClientXMPP):
                 self.busy[who] = {}
         else:
             if who in self.busy.keys():
-                end = (
-                    'Here is what you missed while busy:',
-                    '{}'.format(self.busy[who])
-                )
+                end = [
+                    '{}: {}\n'.format(k, v) for k, v in self.busy[who].items()
+                ]
+
                 self.send_message(
                     mto=who,
                     mtype='chat',
