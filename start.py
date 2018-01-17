@@ -14,6 +14,7 @@ class JARVIS(slixmpp.ClientXMPP):
         slixmpp.ClientXMPP.__init__(self, jid, password)
 
         self.add_event_handler('session_start', self.start)
+        self.add_event_handler('changed_status', self.status_handler)
         self.add_event_handler('message', self.message)
 
         # Commands available for use, with help strings.
@@ -35,6 +36,9 @@ class JARVIS(slixmpp.ClientXMPP):
         mongo = motor.motor_asyncio.AsyncIOMotorClient()
         self.db = mongo.bot
 
+        # Simple list to note who is busy.
+        self.busy = list()
+
     async def start(self, event):
         # This should be awaited. Check commit.
         await self.db.authenticate(
@@ -48,17 +52,22 @@ class JARVIS(slixmpp.ClientXMPP):
         # Watch for hushes.
         asyncio.ensure_future(self._hush())
 
+    async def status_handler(self, pres):
+        logging.info(pres)
+
+        if pres['type'] == 'dnd':
+            if pres['from'] not in self.busy:
+                self.busy.append(pres['from'])
+        else:
+            if pres['from'] in self.busy:
+                self.busy.remove(pres['from'])
+
     async def notifyUser(self, user, msg):
         '''Simple helper method for me.'''
-        # PEP8 79 character pls help
-        hushed = [
-            x['user'] async for x in self.db.subscribers.find(
-                {'user': user, 'hush.active': True}
-            )
-        ]
+        # TODO
 
-        if len(hushed) == 0:
-            xmpp.send_message(
+        if user not in self.busy:
+            self.send_message(
                 mto=user,
                 mtype='chat',
                 mbody=msg,
