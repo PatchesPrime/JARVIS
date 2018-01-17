@@ -65,7 +65,7 @@ class JARVIS(slixmpp.ClientXMPP):
                 self.send_message(
                     mto=who,
                     mtype='chat',
-                    mbody='\n'.join(end)
+                    mbody='While you were gone:\n' + '\n'.join(end)
                 )
 
                 del self.busy[who]
