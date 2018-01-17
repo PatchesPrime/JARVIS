@@ -66,6 +66,7 @@ async def agent(db, *, freq=timedelta(hours=12)):
                             payload = {
                                 'to': sub['user'],
                                 'msg': msg,
+                                'type': 'git',
                             }
 
                             logging.debug('payload={}'.format(payload))

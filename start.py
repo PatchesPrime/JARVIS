@@ -35,8 +35,8 @@ class JARVIS(slixmpp.ClientXMPP):
         mongo = motor.motor_asyncio.AsyncIOMotorClient()
         self.db = mongo.bot
 
-        # Simple list to note who is busy.
-        self.busy = list()
+        # Simple dictionary to note who is busy.
+        self.busy = dict()
 
     async def start(self, event):
         # This should be awaited. Check commit.
@@ -54,15 +54,25 @@ class JARVIS(slixmpp.ClientXMPP):
 
         # Simple logic to maintain the list.
         if pres['type'] == 'dnd':
-            if who not in self.busy:
-                self.busy.append(who)
+            if who not in self.busy.keys():
+                self.busy[who] = {}
         else:
-            if who in self.busy:
-                self.busy.remove(who)
+            if who in self.busy.keys():
+                end = (
+                    'Here is what you missed while busy:',
+                    '{}'.format(self.busy[who])
+                )
+                self.send_message(
+                    mto=who,
+                    mtype='chat',
+                    mbody='\n'.join(end)
+                )
+
+                del self.busy[who]
 
         logging.debug('Status of busy list: {}'.format(self.busy))
 
-    async def notifyUser(self, user, msg):
+    async def notifyUser(self, user, msg, alert_type):
         '''Simple helper method for me.'''
         if user not in self.busy:
             self.send_message(
@@ -70,6 +80,8 @@ class JARVIS(slixmpp.ClientXMPP):
                 mtype='chat',
                 mbody=msg,
             )
+        else:
+            self.busy[user][alert_type] = msg
 
     async def _isAdmin(self, user):
         # Async List Comprehensions and PEP8 formatting
@@ -167,10 +179,18 @@ async def handle_serviceMessage(reader, writer):
                     if subtype != 'both':
                         continue
 
-                    await xmpp.notifyUser(friend, data['msg'])
+                    await xmpp.notifyUser(
+                        friend,
+                        data['msg'],
+                        alert_type=data.get('type')
+                    )
 
             else:
-                await xmpp.notifyUser(data['to'], data['msg'])
+                await xmpp.notifyUser(
+                    data['to'],
+                    data['msg'],
+                    alert_type=data.get('type')
+                )
 
     except msgpack.exceptions.UnpackValueError as e:
         # Something went wrong, likely an empty message.

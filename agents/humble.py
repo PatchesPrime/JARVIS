@@ -83,6 +83,7 @@ async def agent(db, *, freq=timedelta(hours=5)):
                         title=game['human_name'],
                         link=store + game['human_url']
                     ),
+                    'type': 'humblebundle'
                 }
 
                 logging.debug('payload={}'.format(payload))
