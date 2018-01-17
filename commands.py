@@ -207,28 +207,6 @@ async def updateUser(user, payload):
     raise UserWarning('Something went wrong..')
 
 
-async def hush(db, user, timeout):
-    '''
-    Silence to bot for the specified time in hours.
-
-    USAGE: hush your@user.org 4
-    '''
-    await db.subscribers.update_one(
-        {'user': user},
-        {
-            '$set': {
-                'hush': {
-                    'active': True,
-                    'started': datetime.now(),
-                    'expires': datetime.now() + timedelta(hours=float(timeout))
-                }
-            }
-        }
-    )
-
-    return 'Certainly, I\'ll leave you alone for {} hours.'.format(timeout)
-
-
 async def readFile(filename, loop=None):
     if loop is None:
         loop = asyncio.get_event_loop()

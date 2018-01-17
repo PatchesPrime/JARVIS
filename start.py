@@ -49,9 +49,6 @@ class JARVIS(slixmpp.ClientXMPP):
         self.send_presence()
         self.get_roster()
 
-        # Watch for hushes.
-        asyncio.ensure_future(self._hush())
-
     async def status_handler(self, pres):
         '''Handle the busy list via status changes.'''
         who = pres['from'].bare
@@ -83,22 +80,6 @@ class JARVIS(slixmpp.ClientXMPP):
 
         # Are they an admin?
         return user in admin
-
-    async def _hush(self, *, freq=timedelta(seconds=5)):
-        while True:
-            logging.debug('Checking for expired hushes..')
-
-            async for sub in self.db.subscribers.find({'hush.active': True}):
-                if sub['hush']['expires'] < datetime.now():
-                    result = await self.db.subscribers.update_one(
-                        {'user': sub['user']},
-                        {'$set': {'hush.active': False}}
-                    )
-
-                    logging.debug('Unhushed {}'.format(result))
-
-            # Sleep on a timer.
-            await asyncio.sleep(freq.total_seconds())
 
     async def message(self, msg):
         # huehue
