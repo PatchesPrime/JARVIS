@@ -53,19 +53,21 @@ class JARVIS(slixmpp.ClientXMPP):
         asyncio.ensure_future(self._hush())
 
     async def status_handler(self, pres):
-        logging.info(pres)
+        '''Handle the busy list via status changes.'''
+        who = pres['from'].bare
 
+        # Simple logic to maintain the list.
         if pres['type'] == 'dnd':
-            if pres['from'] not in self.busy:
-                self.busy.append(pres['from'])
+            if who not in self.busy:
+                self.busy.append(who)
         else:
-            if pres['from'] in self.busy:
-                self.busy.remove(pres['from'])
+            if who in self.busy:
+                self.busy.remove(who)
+
+        logging.debug('Status of busy list: {}'.format(self.busy))
 
     async def notifyUser(self, user, msg):
         '''Simple helper method for me.'''
-        # TODO
-
         if user not in self.busy:
             self.send_message(
                 mto=user,
