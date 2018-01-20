@@ -54,7 +54,7 @@ async def agent(db, *, freq=timedelta(hours=12)):
                 data = await getCommits(info['user'], info['repo'])
 
                 digest = [
-                    '\nNew commit(s) on {}/{}'.format(
+                    '\nNew commit(s) on {}/{}\n\n'.format(
                         info['user'], info['repo']
                     )
                 ]
@@ -82,7 +82,7 @@ async def agent(db, *, freq=timedelta(hours=12)):
                 if len(digest) >= 2:
                     payload = {
                         'to': sub['user'],
-                        'msg': '\n'.join(digest),
+                        'msg': '\n\n'.join(digest),
                         'type': 'git',
                     }
 
