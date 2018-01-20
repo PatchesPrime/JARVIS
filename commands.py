@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 import config
 from sympy import solve, simplify, SympifyError
+import arrow
 
 
 async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
@@ -47,6 +48,44 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
         except AttributeError as e:
             logging.error('Failed to run REST API request..{}'.format(e))
             return None
+
+
+async def currentTime(zone=''):
+    '''
+    Displays the time of a given timezone in a formatted way.
+
+    USAGE: time
+    USAGE: time EST
+    '''
+    try:
+        # Get the current time in a specific timezone
+        return 'Current time in {} is {}'.format(zone, arrow.now(zone))
+
+    # Display the local time formatted on Type/Key error
+    except TypeError as error:
+        return 'Current time is: {}'.format(arrow.now())
+
+
+async def convertTo(fromTz, toTz):
+    '''
+    Displays the given time/date in a specific timezone and returns
+    the difference.
+
+    USAGE: tz fromTimezone toTimezone
+    '''
+    # Get that tzinfo shit out of here...
+    tzFrom = arrow.now(fromTz).datetime.replace(tzinfo=None)
+    tzTo = arrow.now(toTz).datetime.replace(tzinfo=None)
+
+    # Get a difference response now with the tzinfo bs gone
+    diff = tzFrom - tzTo
+
+    out = (
+        'It is currently {} in {}.'.format(tzTo, toTz),
+        'The difference is {}'.format(round(diff.seconds/3600))
+    )
+
+    return out
 
 
 async def addSubscriber(db, user, admin=False):

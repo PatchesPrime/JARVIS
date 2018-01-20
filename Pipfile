@@ -11,6 +11,7 @@ msgpack-python = "*"
 aiohttp = "*"
 motor = "*"
 sympy = "*"
+arrow = "*"
 
 
 [dev-packages]
