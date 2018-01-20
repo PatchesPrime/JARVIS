@@ -54,7 +54,7 @@ async def agent(db, *, freq=timedelta(hours=12)):
                 data = await getCommits(info['user'], info['repo'])
 
                 digest = [
-                    '\nNew commit(s) on {}/{}\n\n'.format(
+                    '\nNew commit(s) on {}/{}'.format(
                         info['user'], info['repo']
                     )
                 ]
