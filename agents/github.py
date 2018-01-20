@@ -59,8 +59,6 @@ async def agent(db, *, freq=timedelta(hours=12)):
                         # Prevents spam on first lookup of repo.
                         if len(known) >= 1:
                             msg = '{}\n{}'.format(
-                                info['user'],
-                                info['repo'],
                                 commit['message'],
                                 commit['url']
                             )

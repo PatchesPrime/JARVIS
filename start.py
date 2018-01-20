@@ -159,10 +159,6 @@ async def handle_serviceMessage(reader, writer):
     '''
     data = await reader.read()
     addr = writer.get_extra_info('peername')
-    logging.warn('msg from: {0}, len(data): {1}'.format(
-        addr,
-        len(data),
-    ))
 
     # Just to be sure...
     writer.close()
@@ -171,6 +167,13 @@ async def handle_serviceMessage(reader, writer):
     try:
         if len(data) > 0:
             data = msgpack.unpackb(data, encoding='utf-8')
+
+            # Just for logs.
+            logging.warn('msg from: {}, to: {}, len(data): {}'.format(
+                addr,
+                data['to'],
+                len(data),
+            ))
 
             if data['to'] == 'all_friends':
                 # This should be a dictionary and it's not. Why?
