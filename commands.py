@@ -50,20 +50,19 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
             return None
 
 
-async def currentTime(zone=''):
+async def currentTime(zone=None):
     '''
     Displays the time of a given timezone in a formatted way.
 
     USAGE: time
     USAGE: time EST
     '''
-    try:
+    if zone:
         # Get the current time in a specific timezone
         return 'Current time in {} is {}'.format(zone, arrow.now(zone))
 
     # Display the local time formatted on Type/Key error
-    except TypeError as error:
-        return 'Current time is: {}'.format(arrow.now())
+    return 'Current time is: {}'.format(arrow.now())
 
 
 async def convertTo(fromTz, toTz):
