@@ -29,6 +29,8 @@ class JARVIS(slixmpp.ClientXMPP):
             'delgit': commands.delGitSub,
             'solve': commands.solveMath,
             'alert': commands.addWeatherSub,
+            'time': commands.currentTime,
+            'tz': commands.convertTo,
         }
 
         # Get a mongodb client and db
