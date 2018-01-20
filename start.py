@@ -170,7 +170,7 @@ async def handle_serviceMessage(reader, writer):
 
             # Just for logs.
             logging.warn('msg from: {}, to: {}, len(data): {}'.format(
-                addr,
+                addr[0],
                 data['to'],
                 len(data),
             ))
