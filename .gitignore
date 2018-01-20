@@ -4,3 +4,4 @@
 /config.py~
 *.#*
 *_flymake.py
+/todo.org
