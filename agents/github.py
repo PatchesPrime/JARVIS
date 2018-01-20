@@ -53,28 +53,21 @@ async def agent(db, *, freq=timedelta(hours=12)):
                 # Request the data.
                 data = await getCommits(info['user'], info['repo'])
 
+                digest = ['\nNew commit(s) on {}/{}']
                 for commit in data:
                     if commit['id'] not in known:
                         # Prevents spam on first lookup of repo.
                         if len(known) >= 1:
-                            msg = 'New commit {}/{}: {}\n{}'.format(
+                            msg = '{}\n{}'.format(
                                 info['user'],
                                 info['repo'],
                                 commit['message'],
                                 commit['url']
                             )
-                            payload = {
-                                'to': sub['user'],
-                                'msg': msg,
-                                'type': 'git',
-                            }
-
-                            logging.debug('payload={}'.format(payload))
-
-                            # Pass the infomration to Jarvis.
-                            sock = create_connection(('192.168.1.200', 8888))
-                            sock.send(msgpack.packb(payload))
-                            sock.close()
+                            # Using listcomps would look neater but
+                            # also wouldn't be PEP8 compliant.
+                            # The things I do for 79 characters.
+                            digest.append(msg)
 
                         result = await db.git.update(
                             {'id': '{user}/{repo}'.format(**info)},
@@ -83,6 +76,19 @@ async def agent(db, *, freq=timedelta(hours=12)):
                         )
 
                         logging.debug('Upsert: {}'.format(result))
+
+                payload = {
+                    'to': sub['user'],
+                    'msg': '\n'.join(digest),
+                    'type': 'git',
+                }
+
+                logging.debug('payload={}'.format(payload))
+
+                # Pass the infomration to Jarvis.
+                sock = create_connection(('192.168.1.200', 8888))
+                sock.send(msgpack.packb(payload))
+                sock.close()
 
         logging.debug(
             'agent.github sleeping for {}'.format(freq.total_seconds())
