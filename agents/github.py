@@ -53,7 +53,11 @@ async def agent(db, *, freq=timedelta(hours=12)):
                 # Request the data.
                 data = await getCommits(info['user'], info['repo'])
 
-                digest = ['\nNew commit(s) on {}/{}']
+                digest = [
+                    '\nNew commit(s) on {}/{}'.format(
+                        info['user'], info['repo']
+                    )
+                ]
                 for commit in data:
                     if commit['id'] not in known:
                         # Prevents spam on first lookup of repo.
@@ -75,18 +79,19 @@ async def agent(db, *, freq=timedelta(hours=12)):
 
                         logging.debug('Upsert: {}'.format(result))
 
-                payload = {
-                    'to': sub['user'],
-                    'msg': '\n'.join(digest),
-                    'type': 'git',
-                }
+                if len(digest) >= 2:
+                    payload = {
+                        'to': sub['user'],
+                        'msg': '\n'.join(digest),
+                        'type': 'git',
+                    }
 
-                logging.debug('payload={}'.format(payload))
+                    logging.debug('payload={}'.format(payload))
 
-                # Pass the infomration to Jarvis.
-                sock = create_connection(('192.168.1.200', 8888))
-                sock.send(msgpack.packb(payload))
-                sock.close()
+                    # Pass the infomration to Jarvis.
+                    sock = create_connection(('192.168.1.200', 8888))
+                    sock.send(msgpack.packb(payload))
+                    sock.close()
 
         logging.debug(
             'agent.github sleeping for {}'.format(freq.total_seconds())
