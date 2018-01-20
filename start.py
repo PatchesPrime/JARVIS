@@ -29,6 +29,8 @@ class JARVIS(slixmpp.ClientXMPP):
             'delgit': commands.delGitSub,
             'solve': commands.solveMath,
             'alert': commands.addWeatherSub,
+            'time': commands.currentTime,
+            'tz': commands.convertTo,
         }
 
         # Get a mongodb client and db
@@ -117,7 +119,7 @@ class JARVIS(slixmpp.ClientXMPP):
         # Command processing.
         try:
             # The commands non-admin can run..
-            safeCommands = ('solve', 'help')
+            safeCommands = ('solve', 'help', 'time', 'tz')
 
             # Command logic.
             if await self._isAdmin(msg['from'].bare) or cmd in safeCommands:
