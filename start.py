@@ -5,7 +5,7 @@ import logging
 import asyncio
 import msgpack
 from inspect import signature
-from datetime import datetime, timedelta
+from functools import partial
 import config
 
 
@@ -18,7 +18,7 @@ class JARVIS(slixmpp.ClientXMPP):
         self.add_event_handler('message', self.message)
 
         # Commands available for use, with help strings.
-        self.usable_functions = {
+        self.commands = {
             'register_user': commands.registerUser,
             'delete_user': commands.deleteUser,
             'update_user': commands.updateUser,
@@ -123,14 +123,19 @@ class JARVIS(slixmpp.ClientXMPP):
 
             # Command logic.
             if await self._isAdmin(msg['from'].bare) or cmd in safeCommands:
+                # Wrap the method to reduce character count because
+                # we are sinners.
+                func = partial(self.commands[cmd], caller=msg['from'].bare)
+
                 # Honestly not acceptable. I'm creating bloat.
-                params = signature(self.usable_functions[cmd]).parameters
+                params = signature(self.commands[cmd]).parameters
 
                 if 'db' in params.keys():
-                    resp = await self.usable_functions[cmd](self.db, *args)
+                    resp = await func(self.db, *args)
                     msg.reply(resp).send()
                 else:
-                    msg.reply(await self.usable_functions[cmd](*args)).send()
+                    resp = await func(*args)
+                    msg.reply(resp).send()
 
             else:
                 msg.reply('Invalid permissions for that command.').send()
@@ -138,14 +143,14 @@ class JARVIS(slixmpp.ClientXMPP):
         except (UserWarning, KeyError, SyntaxError, TypeError) as e:
             if type(e).__name__ == 'KeyError':
                 end = 'My available commands:\n'
-                for k, v in self.usable_functions.items():
+                for k, v in self.commands.items():
                     end += '{0}\n{1}\n'.format(k, v.__doc__)
 
                 msg.reply(end).send()
 
             elif type(e).__name__ == 'TypeError':
                 # Tell them how to use it.
-                msg.reply(self.usable_functions[cmd].__doc__).send()
+                msg.reply(self.commands[cmd].__doc__).send()
 
             else:
                 # Actual command failure
