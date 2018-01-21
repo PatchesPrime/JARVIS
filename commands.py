@@ -87,22 +87,17 @@ async def convertTo(fromTz, toTz):
     return out
 
 
-async def addSubscriber(db, user, admin=False):
+async def addSubscriber(db, target, admin=False):
     '''
     Add a subscriber to my MongoDB for notable weather alerts.
     USAGE: add_sub user@host
     '''
     result = await db.subscribers.insert_one(
         {
-            'user': user,
+            'user': target,
             'same_codes': list(),
             'filter': ['Severe', 'Unknown'],
             'admin': bool(admin),
-            'hush': {
-                'active': False,
-                'started': datetime.now(),
-                'expires': datetime.now(),
-            },
             'git': [],
         }
     )
