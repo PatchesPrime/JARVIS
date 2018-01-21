@@ -150,8 +150,8 @@ async def addGitSub(db, user, gituser, gitrepo):
     Add a subscription to a GitHub git repo to watch for commits.
     USAGE: gitwatch github_username github_repository
 
-    Example: gitwatch PatchesPrime JARVIS
-    will watch 'PatchesPrime' users 'JARVIS' repo.
+    Example: gitwatch xmppID PatchesPrime JARVIS
+    will watch 'PatchesPrime' users 'JARVIS' repo for xmppID.
     '''
     result = await db.subscribers.update_one(
         {'user': str(user)},
@@ -172,7 +172,7 @@ async def delGitSub(db, user, gituser, gitrepo):
     Delete a subscription to a GitHub git repo to watch for commits.
     USAGE: delgit github_username github_repository
 
-    Example: delgit PatchesPrime JARVIS
+    Example: delgit xmppID PatchesPrime JARVIS
     '''
     result = await db.subscribers.update_one(
         {'user': str(user)},
