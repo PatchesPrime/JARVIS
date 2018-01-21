@@ -4,7 +4,6 @@ import json
 import msgpack
 import asyncio
 from os.path import expanduser
-from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 import config
 from sympy import solve, simplify, SympifyError
@@ -50,7 +49,7 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
             return None
 
 
-async def currentTime(zone=None):
+async def currentTime(zone=None, *, caller=None):
     '''
     Displays the time of a given timezone in a formatted way.
 
@@ -65,7 +64,7 @@ async def currentTime(zone=None):
     return 'Current time is: {}'.format(arrow.now())
 
 
-async def convertTo(fromTz, toTz):
+async def convertTo(fromTz, toTz, *, caller=None):
     '''
     Displays the given time/date in a specific timezone and returns
     the difference.
@@ -87,7 +86,7 @@ async def convertTo(fromTz, toTz):
     return out
 
 
-async def addSubscriber(db, target, admin=False):
+async def addSubscriber(db, target, admin=False, *, caller=None):
     '''
     Add a subscriber to my MongoDB for notable weather alerts.
     USAGE: add_sub user@host
@@ -106,16 +105,19 @@ async def addSubscriber(db, target, admin=False):
     return 'As you wish! Their uid: {}'.format(result.inserted_id)
 
 
-async def addWeatherSub(db, user, zipcode):
+async def addWeatherSub(db, target, zipcode, *, caller=None):
     '''
     Add weather alerts to my DB for subscriber 'user'.
     USAGE: alert_sub test@user 55555
     '''
+    if target == 'me':
+        target = caller
+
     same = await getSAMECode(zipcode)  # Get the SAME.
     same = same.split()[-1]  # Chop it up.
 
     result = await db.subscribers.update_one(
-        {'user': str(user)},
+        {'user': str(target)},
         {'$push': {'same_codes': same}},
         upsert=True
     )
@@ -126,7 +128,7 @@ async def addWeatherSub(db, user, zipcode):
     raise UserWarning('Something went wrong, please contact an admin..')
 
 
-async def deleteSubscriber(db, user):
+async def deleteSubscriber(db, user, *, caller=None):
     '''
     Delete a subscriber from my MongoDB for notable weather alerts.
     USAGE: del_sub user@host
@@ -140,84 +142,95 @@ async def deleteSubscriber(db, user):
     return 'Certainly. {} users removed.'.format(result.deleted_count)
 
 
-async def addGitSub(db, user, gituser, gitrepo):
+async def addGitSub(db, target, gituser, gitrepo, *, caller=None):
     '''
     Add a subscription to a GitHub git repo to watch for commits.
-    USAGE: gitwatch github_username github_repository
+    USAGE: gitwatch xmpp_id github_username github_repository
 
-    Example: gitwatch xmppID PatchesPrime JARVIS
-    will watch 'PatchesPrime' users 'JARVIS' repo for xmppID.
+    Example: gitwatch user@example.org PatchesPrime JARVIS
+    will watch 'PatchesPrime' users 'JARVIS' repo for xmppUser.
+
+    NOTE: can accept 'me' as xmpp_id to add for yourself.
     '''
+    if target == 'me':
+        target == caller
+
     result = await db.subscribers.update_one(
-        {'user': str(user)},
+        {'user': str(target)},
         {'$push': {'git': {'user': str(gituser), 'repo': str(gitrepo)}}},
         upsert=True
     )
 
     if result.modified_count:
         return 'Git repo {}/{} added to my entry for {}'.format(
-            gituser, gitrepo, user
+            gituser, gitrepo, target
         )
 
     raise UserWarning('Something went wrong adding git repo..')
 
 
-async def delGitSub(db, user, gituser, gitrepo):
+async def delGitSub(db, target, gituser, gitrepo, *, caller=None):
     '''
     Delete a subscription to a GitHub git repo to watch for commits.
+
     USAGE: delgit github_username github_repository
 
-    Example: delgit xmppID PatchesPrime JARVIS
+    Example: delgit user@example.org PatchesPrime JARVIS
+    NOTE: can accept 'me' as xmpp_id to add for yourself.
     '''
+    if target == 'me':
+        target = caller
+
     result = await db.subscribers.update_one(
-        {'user': str(user)},
+        {'user': str(target)},
         {'$pull': {'git': {'user': str(gituser), 'repo': str(gitrepo)}}},
     )
 
     if result.modified_count:
         return 'Removed {}/{} repo from {} entry..'.format(
-            gituser, gitrepo, user
+            gituser, gitrepo, target
         )
 
-    raise UserWarning('Could not remove repo from {} entry.'.format(user))
+    raise UserWarning('Could not remove repo from {} entry.'.format(target))
 
 
-async def registerUser(user, pwd):
+async def registerUser(target, pwd, *, caller=None):
     '''
     Register a user on HIVEs XMPP server.
+
     USAGE: register_user username password
     Note: username should be bare, without @host.
     '''
     payload = {
-        'username': user,
+        'username': target,
         'password': pwd,
     }
 
     req = await runREST('post', 'users', payload=payload)
 
     if req.status == 201:
-        return 'User {} has been registered'.format(user)
+        return 'User {} has been registered'.format(target)
 
     # Fail case, throw predictable exception.
     raise UserWarning('Something went wrong in adding the user..')
 
 
-async def deleteUser(user):
+async def deleteUser(target, *, caller=None):
     '''
     Delete a users registration on HIVEs XMPP server.
     USAGE: delete_user username
     NOTE: username should be bare, without @host.
     '''
-    endpoint = 'users/{0}'.format(user)
+    endpoint = 'users/{0}'.format(target)
     req = await runREST('delete', endpoint)
 
     if req.status == 200:
-        return 'Destroyed \'{}\' user credentials'.format(user)
+        return 'Destroyed \'{}\' user credentials'.format(target)
 
     raise UserWarning('Couldn\'t remove user..')
 
 
-async def updateUser(user, payload):
+async def updateUser(target, payload, *, caller=None):
     '''
     Update a user on HIVEs XMPP server.
     USAGE update_user user {"Valid": "JSON"}
@@ -229,13 +242,13 @@ async def updateUser(user, payload):
 
     NOTE: You MUST use double quotes due to JSON handling.
     '''
-    api = 'users/{0}'.format(user)
+    api = 'users/{0}'.format(target)
 
     # Trust that it's JSON.
     req = await runREST('put', api, payload=payload)
 
     if req.status == 200:
-        return '{}\'s credentials have been updated.'.format(user)
+        return '{}\'s credentials have been updated.'.format(target)
 
     raise UserWarning('Something went wrong..')
 
@@ -250,8 +263,8 @@ async def readFile(filename, loop=None):
         return msgpack.unpackb(obj, encoding='utf-8')
 
 
-async def solveMath(expr):
-    """
+async def solveMath(expr, *, caller=None):
+    '''
     Takes an mathematics expression or equation and sends it to
     the applicable function to find the solution from sympy
 
@@ -259,7 +272,7 @@ async def solveMath(expr):
 
     NOTE: no spaces in expression/equation. Operations must be explicit.
     eg. requires 3*x rather than 3x
-    """
+    '''
 
     result = None
     if not isinstance(expr, str):
@@ -297,7 +310,7 @@ async def solveMath(expr):
     raise UserWarning('I couldn\'t solve the problem..sorry :(')
 
 
-async def getSAMECode(place):
+async def getSAMECode(place, *, caller=None):
     '''
     Get the SAME code for a given place. Trys to make it work
     yet probably wont.
