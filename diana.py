@@ -45,9 +45,22 @@ async def main():
 
 
 if __name__ == '__main__':
-    # Setup logging.
-    logging.basicConfig(level=logging.INFO,
-                        format='%(levelname)-8s %(message)s')
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--debug', help='Set loglevel',
+                        action='store_true')
+
+    # Parse args.
+    args = parser.parse_args()
+
+    # Log level debug or not?
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(levelname)-8s %(message)s')
+    else:
+        logging.basicConfig(level=logging.INFO,
+                            format='%(levelname)-8s %(message)s')
 
     # Get loop and run main() on it.
     loop = asyncio.get_event_loop()
