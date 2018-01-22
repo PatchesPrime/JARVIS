@@ -86,6 +86,26 @@ async def convertTo(fromTz, toTz, *, caller=None):
     return out
 
 
+async def addSaleWatch(db, target, url, price, *, caller=None):
+    if target == 'me':
+        target = caller
+
+    payload = {'name': str(url.split('/')[0]), 'price': float(price)}
+
+    result = await db.subscribers.update_one(
+        {'user': str(target)},
+        {'$push': {'sales_watch': payload}},
+        upsert=True
+    )
+
+    if result.modified_count:
+        return 'Okay, I\'ll keep an eye out for sales of {} @ {}'.format(
+            url.split('/')[0], price
+        )
+    else:
+        return 'Something went wrong! Open a github issue or talk to Patches'
+
+
 async def addSubscriber(db, target, admin=False, *, caller=None):
     '''
     Add a subscriber to my MongoDB for notable weather alerts.
