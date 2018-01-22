@@ -32,6 +32,9 @@ async def humbleScrape():
                 # Chop off 'page: ', which is 6 characters.
                 shop = json.loads(line[6:-1])['entity_lookup_dict']
 
+                # We're done here, get out of loop.
+                break
+
         try:
             games = [
                 game for game in shop.values()
