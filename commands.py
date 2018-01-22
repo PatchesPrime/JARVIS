@@ -87,6 +87,15 @@ async def convertTo(fromTz, toTz, *, caller=None):
 
 
 async def addSaleWatch(db, target, url, price, *, caller=None):
+    '''
+    Add a game for me to watch for a sale less than or equal to a price.
+
+    USAGE: salewatch xmppUser humblebundle_store_url price
+
+    NOTE: the price should be int/float (100, 100.5, etc). URL
+    should be the FULL url to access the games store page on
+    humblebundle website.
+    '''
     if target == 'me':
         target = caller
 
