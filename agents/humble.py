@@ -26,8 +26,11 @@ async def humbleScrape():
         for line in page_src.splitlines():
             # So...sometimes this string isn't in the page? What?
             if 'page: {"strings"' in line:
-                # Not very clean but it should do. Chop off 'page: '.
-                shop = json.loads(line[12:-1])['entity_lookup_dict']
+                # Chop off leading whitespace.
+                line = line.lstrip()
+
+                # Chop off 'page: ', which is 6 characters.
+                shop = json.loads(line[6:-1])['entity_lookup_dict']
 
         try:
             games = [
