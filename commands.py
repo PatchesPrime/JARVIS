@@ -90,7 +90,11 @@ async def addSaleWatch(db, target, url, price, *, caller=None):
     if target == 'me':
         target = caller
 
-    payload = {'name': str(url.split('/')[-1]), 'price': float(price)}
+    payload = {
+        'name': str(url.split('/')[-1]),
+        'price': float(price),
+        'url': str(url),
+    }
 
     result = await db.subscribers.update_one(
         {'user': str(target)},

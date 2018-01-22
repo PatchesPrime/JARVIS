@@ -69,7 +69,8 @@ async def agent(db, *, freq=timedelta(hours=5)):
                         ),
                         'You asked to be notifed when it was <= {}'.format(
                             watching['price']
-                        )
+                        ),
+                        '\nLink: {}'.format(watching['url'])
                     )
 
                     # Payload.
