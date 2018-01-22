@@ -376,7 +376,11 @@ async def getSAMECode(place, *, caller=None):
 
             # Not a fan of excessive code duplication, but
             # it'll be better than recursion.
-            payload['address'] = city + state
+            try:
+                payload['address'] = city + state
+            except UnboundLocalError:
+                return 'We failed..Are you sure it\'s a valid zipcode?'
+
             async with session.get(geocodeAPI, params=payload) as response:
                 request = await response.json()
 
