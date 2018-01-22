@@ -153,7 +153,7 @@ async def addGitSub(db, target, gituser, gitrepo, *, caller=None):
     NOTE: can accept 'me' as xmpp_id to add for yourself.
     '''
     if target == 'me':
-        target == caller
+        target = caller
 
     result = await db.subscribers.update_one(
         {'user': str(target)},
