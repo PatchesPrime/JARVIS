@@ -142,7 +142,7 @@ class JARVIS(slixmpp.ClientXMPP):
             else:
                 msg.reply('Invalid permissions for that command.').send()
 
-        except (UserWarning, KeyError, SyntaxError, TypeError) as e:
+        except (KeyError, SyntaxError, TypeError) as e:
             if type(e).__name__ == 'KeyError':
                 end = 'My available commands:\n'
                 for k, v in self.commands.items():
