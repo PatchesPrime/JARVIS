@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor
 import config
 from sympy import solve, simplify, SympifyError
 import arrow
-import motor.motor_asyncio
 
 
 async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
@@ -116,8 +115,8 @@ async def addSaleWatch(db, target, url, price, *, caller=None):
         return 'Okay, I\'ll keep an eye out for sales of {} @ {}'.format(
             url.split('/')[-1], price
         )
-    else:
-        return 'Something went wrong! Open a github issue or talk to Patches'
+
+    return ohSnap(addSaleWatch, [target, url, price], caller)
 
 
 async def addSubscriber(db, target, admin=False, *, caller=None):
@@ -159,7 +158,7 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
     if result.modified_count:
         return 'Added SAME ({}) to DB and will alert if needed.'.format(same)
 
-    raise UserWarning('Something went wrong, please contact an admin..')
+    return ohSnap(addWeatherSub, [target, zipcode], caller)
 
 
 async def deleteSubscriber(db, user, *, caller=None):
@@ -173,7 +172,10 @@ async def deleteSubscriber(db, user, *, caller=None):
         }
     )
 
-    return 'Certainly. {} users removed.'.format(result.deleted_count)
+    if result.deleted_count:
+        return 'Certainly. {} users removed.'.format(result.deleted_count)
+
+    return ohSnap(deleteSubscriber, [user], caller)
 
 
 async def addGitSub(db, target, gituser, gitrepo, *, caller=None):
@@ -200,7 +202,7 @@ async def addGitSub(db, target, gituser, gitrepo, *, caller=None):
             gituser, gitrepo, target
         )
 
-    raise UserWarning('Something went wrong adding git repo..')
+    return ohSnap(addGitSub, [target, gituser, gitrepo], caller)
 
 
 async def delGitSub(db, target, gituser, gitrepo, *, caller=None):
@@ -225,7 +227,7 @@ async def delGitSub(db, target, gituser, gitrepo, *, caller=None):
             gituser, gitrepo, target
         )
 
-    raise UserWarning('Could not remove repo from {} entry.'.format(target))
+    return ohSnap(delGitSub, [target, gituser, gitrepo], caller)
 
 
 async def registerUser(target, pwd, *, caller=None):
@@ -246,7 +248,7 @@ async def registerUser(target, pwd, *, caller=None):
         return 'User {} has been registered'.format(target)
 
     # Fail case, throw predictable exception.
-    raise UserWarning('Something went wrong in adding the user..')
+    return ohSnap(registerUser, [target, pwd], caller)
 
 
 async def deleteUser(target, *, caller=None):
@@ -261,7 +263,7 @@ async def deleteUser(target, *, caller=None):
     if req.status == 200:
         return 'Destroyed \'{}\' user credentials'.format(target)
 
-    raise UserWarning('Couldn\'t remove user..')
+    return ohSnap(deleteUser, [target], caller)
 
 
 async def updateUser(target, payload, *, caller=None):
@@ -284,7 +286,7 @@ async def updateUser(target, payload, *, caller=None):
     if req.status == 200:
         return '{}\'s credentials have been updated.'.format(target)
 
-    raise UserWarning('Something went wrong..')
+    return ohSnap(updateUser, [target, payload], caller)
 
 
 async def readFile(filename, loop=None):
@@ -341,7 +343,7 @@ async def solveMath(expr, *, caller=None):
     if result:
         return 'Here is my solution: {}'.format(result)
 
-    raise UserWarning('I couldn\'t solve the problem..sorry :(')
+    return 'I couldn\'t solve the problem..sorry :('
 
 
 async def getSAMECode(place, *, caller=None):
@@ -372,7 +374,7 @@ async def getSAMECode(place, *, caller=None):
             logging.warn('IndexError: {}'.format(e))
             message = ('Something went wrong, likely googles fault',
                        'or perhaps invalid zipcode..')
-            raise UserWarning(' '.join(message))
+            return ' '.join(message)
 
         # Forgive me padre for I have sinned.
         # types = {y for x in comps for y in x['types']}
@@ -424,7 +426,7 @@ async def getSAMECode(place, *, caller=None):
                     logging.warn('IndexError: {}'.format(e))
                     message = ('Something went wrong, likely googles fault',
                                'or perhaps invalid zipcode..')
-                    raise UserWarning(' '.join(message))
+                    return ' '.join(message)
 
                 for com in comp:
                     if 'administrative_area_level_2' in com['types']:
@@ -440,12 +442,17 @@ async def getSAMECode(place, *, caller=None):
                     return 'The code, sir: {}'.format(codes[county + state])
                 except UnboundLocalError:
                     # We couldn't find the county, sadly.
-                    raise UserWarning('Couldn\'t get your county..')
+                    return ohSnap(
+                        getSAMECode,
+                        [place],
+                        caller,
+                        stacktrace='Couldn\'t get county'
+                    )
 
 
-async def ohSnap(func, args, stacktrace=None):
+async def ohSnap(func, args, caller, stacktrace=None):
     args = ', '.join(args)
-    logging.error(f'{func}({args}) > TRACE: {stacktrace}')
+    logging.error(f'{caller} used {func.__name__}({args}) TRACE: {stacktrace}')
 
     msg = (
         'Something went wrong, but worry not! I\'ve logged it',
