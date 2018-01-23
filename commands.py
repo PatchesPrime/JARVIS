@@ -57,6 +57,8 @@ async def currentTime(zone=None, *, caller=None):
     USAGE: time EST
     '''
     if zone:
+        zone = zone.upper()
+
         # Get the current time in a specific timezone
         return 'Current time in {} is {}'.format(zone, arrow.now(zone))
 
@@ -71,6 +73,9 @@ async def convertTo(fromTz, toTz, *, caller=None):
 
     USAGE: tz fromTimezone toTimezone
     '''
+    # Breaks if non-caps.
+    fromTz, toTz = fromTz.upper(), toTz.upper()
+
     # Get that tzinfo shit out of here...
     tzFrom = arrow.now(fromTz).datetime.replace(tzinfo=None)
     tzTo = arrow.now(toTz).datetime.replace(tzinfo=None)
