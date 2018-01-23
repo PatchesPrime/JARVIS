@@ -451,12 +451,13 @@ async def getSAMECode(place, *, caller=None):
 
 
 def ohSnap(func, args, caller, stacktrace=None):
-    args = ', '.join(args)
-    logging.error(f'{caller} used {func.__name__}({args}) TRACE: {stacktrace}')
+    arg_str = ', '.join(args)
+    name = func.__name__
+    logging.warning(f'{caller} used {name}({arg_str}) TRACE: {stacktrace}')
 
     msg = (
         'Something went wrong, but worry not! I\'ve logged it',
-        'and an admin get around to fixing it as soon as they can.\n',
+        'and an admin will get around to fixing it as soon as they can.\n',
         'Have a nice day! :)'
     )
 
