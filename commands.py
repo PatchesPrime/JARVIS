@@ -328,7 +328,7 @@ async def solveMath(expr, *, caller=None):
         # subtracting the whole right side from left side.
         expr = "{before}-({after})".format(
             before=expr[:eqindex],
-            after=expr[eqindex+1:]
+            after=expr[eqindex + 1:]
         )
         try:
             result = solve(expr)
