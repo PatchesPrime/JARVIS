@@ -83,7 +83,7 @@ async def convertTo(fromTz, toTz, *, caller=None):
         'The difference is {} hours.'.format(round(diff.seconds/3600))
     )
 
-    return out
+    return '\n'.join(out)
 
 
 async def addSaleWatch(db, target, url, price, *, caller=None):
