@@ -440,3 +440,14 @@ async def getSAMECode(place, *, caller=None):
                 except UnboundLocalError:
                     # We couldn't find the county, sadly.
                     raise UserWarning('Couldn\'t get your county..')
+
+
+def ohSnap(func, args, stacktrace=None):
+    msg = (
+        'Something has gone wrong executing the command.',
+        'Please either open a GitHub issue or contact an admin',
+        'with the following information: \n',
+        f'{func}({*args}):\n\tTRACE: {stacktrace}'
+    )
+
+    return '\n'.join(msg)
