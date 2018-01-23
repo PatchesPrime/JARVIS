@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 import config
 from sympy import solve, simplify, SympifyError
 import arrow
+import motor.motor_asyncio
 
 
 async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
@@ -442,12 +443,14 @@ async def getSAMECode(place, *, caller=None):
                     raise UserWarning('Couldn\'t get your county..')
 
 
-def ohSnap(func, args, stacktrace=None):
+async def ohSnap(func, args, stacktrace=None):
+    args = ', '.join(args)
+    logging.error(f'{func}({args}) > TRACE: {stacktrace}')
+
     msg = (
-        'Something has gone wrong executing the command.',
-        'Please either open a GitHub issue or contact an admin',
-        'with the following information: \n',
-        f'{func}({*args}):\n\tTRACE: {stacktrace}'
+        'Something went wrong, but worry not! I\'ve logged it',
+        'and an admin get around to fixing it as soon as they can.\n',
+        'Have a nice day! :)'
     )
 
-    return '\n'.join(msg)
+    return ' '.join(msg)
