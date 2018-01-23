@@ -450,7 +450,7 @@ async def getSAMECode(place, *, caller=None):
                     )
 
 
-async def ohSnap(func, args, caller, stacktrace=None):
+def ohSnap(func, args, caller, stacktrace=None):
     args = ', '.join(args)
     logging.error(f'{caller} used {func.__name__}({args}) TRACE: {stacktrace}')
 
