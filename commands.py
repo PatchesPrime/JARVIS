@@ -85,7 +85,7 @@ async def convertTo(fromTz, toTz, *, caller=None):
 
     out = (
         'It is currently {} in {}.'.format(tzTo, toTz),
-        'The difference is {} hours.'.format(round(diff.seconds/3600))
+        'The difference is {} hours.'.format(round(diff.seconds / 3600))
     )
 
     return '\n'.join(out)
