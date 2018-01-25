@@ -353,7 +353,7 @@ async def solveMath(expr, *, caller=None):
 
 async def getSAMECode(place, *, caller=None):
     '''
-    Get the SAME code for a given place. Trys to make it work
+    Get the SAME code for a given place. Tries to make it work
     yet probably wont.
 
     USAGE: same zipcodeHere
