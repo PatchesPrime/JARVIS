@@ -83,6 +83,9 @@ async def convertTo(fromTz, toTz, *, caller=None):
     # Get a difference response now with the tzinfo bs gone
     diff = tzFrom - tzTo
 
+    if diff.days < 0:
+        diff = tzTo - tzFrom
+
     out = (
         'It is currently {} in {}.'.format(tzTo, toTz),
         'The difference is {} hours.'.format(round(diff.seconds / 3600))
