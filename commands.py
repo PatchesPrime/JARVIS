@@ -59,6 +59,10 @@ async def currentTime(zone=None, *, caller=None):
     if zone:
         zone = zone.upper()
 
+        # Edge Case
+        if zone == 'PST':
+            zone = 'US/Pacific'
+
         # Get the current time in a specific timezone
         return 'Current time in {} is {}'.format(zone, arrow.now(zone))
 
@@ -75,6 +79,12 @@ async def convertTo(fromTz, toTz, *, caller=None):
     '''
     # Breaks if non-caps.
     fromTz, toTz = fromTz.upper(), toTz.upper()
+
+    # Edge Case
+    if fromTz == 'PST':
+        fromTz = 'US/Pacific'
+    if toTz == 'PST':
+        toTz = 'US/Pacific'
 
     # Get that tzinfo shit out of here...
     tzFrom = arrow.now(fromTz).datetime.replace(tzinfo=None)
