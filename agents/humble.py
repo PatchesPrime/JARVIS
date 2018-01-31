@@ -56,7 +56,7 @@ async def agent(db, *, freq=timedelta(hours=5)):
         try:
             free_games = await humbleScrape()
         except asyncio.TimeoutError as e:
-            logging.warn('Timed out during humblepricer!')
+            logging.warn('Timed out during free game check!')
             continue
 
         if free_games:
