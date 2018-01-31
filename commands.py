@@ -104,18 +104,27 @@ async def convertTo(fromTz, toTz, *, caller=None):
     return '\n'.join(out)
 
 
-async def addSaleWatch(db, target, url, price, *, caller=None):
+async def addSaleWatch(db, target, url, price, monthly=False, *, caller=None):
     '''
     Add a game for me to watch for a sale less than or equal to a price.
 
-    USAGE: salewatch xmppUser humblebundle_store_url price
+    USAGE: salewatch xmppUser humblebundle_store_url price monthly
 
-    NOTE: the price should be int/float (100, 100.5, etc). URL
-    should be the FULL url to access the games store page on
-    humblebundle website.
+    NOTE: xmppUser can be 'me' if it's for you, the price should
+    be int/float (100, 100.5, etc). URL should be the FULL url to
+    access the games store page on humblebundle website. Monthly
+    is optional, and only required if you want to include the
+    HumbleMonthly 10% discount.
     '''
     if target == 'me':
         target = caller
+
+    # I hate this, but Jarvis passes strings and bool(non_empty_str) == True
+    falsey = ['false', 'no', 'False', False]
+
+    if monthly not in falsey:
+        # Subtract 10%, the HumbleMonthly (good value) discount.
+        price = float(price) - (float(price) * 0.10)
 
     payload = {
         'name': str(url.split('/')[-1]),
