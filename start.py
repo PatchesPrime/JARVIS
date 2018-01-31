@@ -176,10 +176,10 @@ async def handle_serviceMessage(reader, writer):
             data = msgpack.unpackb(data, encoding='utf-8')
 
             # Just for logs.
-            logging.warn('msg from: {}, to: {}, len(data): {}'.format(
+            logging.warn('msg from: {}, to: {}, type: {}'.format(
                 addr[0],
                 data['to'],
-                len(data),
+                data.get('type'),
             ))
 
             if data['to'] == 'all_friends':
