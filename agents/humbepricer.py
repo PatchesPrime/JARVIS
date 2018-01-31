@@ -44,7 +44,11 @@ async def agent(db, *, freq=timedelta(hours=5)):
         qfilter = {'user': 1, 'sales_watch': 1}
         async for sub in db.subscribers.find(query, qfilter):
             for watching in sub['sales_watch']:
-                check = await humbleScrape(watching['name'])
+                try:
+                    check = await humbleScrape(watching['name'])
+                except asyncio.TimeoutError as e:
+                    logging.warn('Timed out during humblepricer!')
+                    continue
 
                 if check['current_price'][0] <= watching['price']:
                     logging.debug('Found good sale: {}'.format(watching))
