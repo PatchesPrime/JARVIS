@@ -122,14 +122,11 @@ async def addSaleWatch(db, target, url, price, monthly=False, *, caller=None):
     # I hate this, but Jarvis passes strings and bool(non_empty_str) == True
     falsey = ['false', 'no', 'False', False]
 
-    if monthly not in falsey:
-        # Subtract 10%, the HumbleMonthly (good value) discount.
-        price = float(price) - (float(price) * 0.10)
-
     payload = {
         'name': str(url.split('/')[-1]),
         'price': float(price),
         'url': str(url),
+        'discount': monthly in falsey,
     }
 
     result = await db.subscribers.update_one(

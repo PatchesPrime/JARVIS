@@ -50,7 +50,12 @@ async def agent(db, *, freq=timedelta(hours=5)):
                     logging.warn('Timed out during humblepricer!')
                     continue
 
-                if check['current_price'][0] <= watching['price']:
+                price, wanted = check['current_price'][0], watching['price']
+
+                if watching['discount']:
+                    price = price - (price * 0.10)
+
+                if price <= wanted:
                     logging.debug('Found good sale: {}'.format(watching))
 
                     # Remove the entry from the DB. Bad practice? Yep.
