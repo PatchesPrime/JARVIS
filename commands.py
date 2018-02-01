@@ -126,7 +126,7 @@ async def addSaleWatch(db, target, url, price, monthly=False, *, caller=None):
         'name': str(url.split('/')[-1]),
         'price': float(price),
         'url': str(url),
-        'discount': monthly in falsey,
+        'discount': monthly not in falsey,
     }
 
     result = await db.subscribers.update_one(
