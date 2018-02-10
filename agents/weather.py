@@ -89,7 +89,7 @@ async def agent(db, *, freq=timedelta(minutes=5)):
                             payload = {
                                 'to': sub['user'],
                                 'msg': '{}\n\n{}'.format(headline, statement),
-                                'type': 'git',
+                                'type': 'weather',
                             }
 
                             # Pass the infomration to Jarvis.
