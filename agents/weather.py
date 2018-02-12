@@ -51,10 +51,6 @@ async def agent(db, *, freq=timedelta(minutes=5)):
     while True:
         logging.debug('Checking the weather..')
         async for sub in db.subscribers.find({}):
-            if sub['hush']['active']:
-                logging.debug('{} hushed me, skipping'.format(sub['user']))
-                continue
-
             for location in sub['same_codes']:
                 data = await getWeather(location)
 
