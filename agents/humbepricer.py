@@ -74,7 +74,7 @@ async def agent(db, *, freq=timedelta(hours=5)):
                     msg = (
                         'Game matching your criteria found!\n',
                         '{} is currently available for {}'.format(
-                            check['human_name'], check['current_price'][0]
+                            check['human_name'], price
                         ),
                         'You asked to be notifed when it was <= {}'.format(
                             watching['price']
