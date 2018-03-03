@@ -17,7 +17,8 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
 
     # Default URL is our local REST
     if url is None:
-        url = 'http://localhost:9090/plugins/restapi/v1/{0}/'.format(
+        url = 'http://{}/plugins/restapi/v1/{}/'.format(
+            config.restapi_host,
             endpoint
         )
     else:

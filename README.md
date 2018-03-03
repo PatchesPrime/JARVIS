@@ -26,6 +26,7 @@ xmpp_pass = 'password here'
 mongo_user = 'jarvis'
 mongo_pass = 'mongo pass here'
 geocode_key = 'google geocode api key'
+restapi_host = 'host:port of the xmpp restful api'
 restapi_key = 'xmpp server rest api key'
 github = 'github api key'
 ```
