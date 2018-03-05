@@ -305,6 +305,9 @@ async def updateUser(target, payload, *, caller=None):
     '''
     api = 'users/{0}'.format(target)
 
+    # Prepare the payload.
+    payload = json.loads(payload)
+
     # Trust that it's JSON.
     req = await runREST('put', api, payload=payload)
 
