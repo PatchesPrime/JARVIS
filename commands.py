@@ -291,7 +291,7 @@ async def deleteUser(target, *, caller=None):
     return ohSnap(deleteUser, [target], caller)
 
 
-async def updateUser(target, payload, *, caller=None):
+async def updateUser(target, *payload, caller=None):
     '''
     Update a user on HIVEs XMPP server.
     USAGE update_user user {"Valid": "JSON"}
@@ -306,7 +306,7 @@ async def updateUser(target, payload, *, caller=None):
     api = 'users/{0}'.format(target)
 
     # Prepare the payload.
-    payload = json.loads(payload)
+    payload = json.loads(' '.join(payload))
 
     # Trust that it's JSON.
     req = await runREST('put', api, payload=payload)
