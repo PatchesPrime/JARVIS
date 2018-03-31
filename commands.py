@@ -55,11 +55,9 @@ async def currentTime(zone=None, *, caller=None):
     Displays the time of a given timezone in a formatted way.
 
     USAGE: time
-    USAGE: time EST
+    USAGE: time EST or US/Eastern
     '''
     if zone:
-        zone = zone.upper()
-
         # Edge Case
         if zone == 'PST':
             zone = 'US/Pacific'
@@ -77,15 +75,17 @@ async def convertTo(fromTz, toTz, *, caller=None):
     the difference.
 
     USAGE: tz fromTimezone toTimezone
-    '''
-    # Breaks if non-caps.
-    fromTz, toTz = fromTz.upper(), toTz.upper()
 
-    # Edge Case
-    if fromTz == 'PST':
-        fromTz = 'US/Pacific'
-    if toTz == 'PST':
-        toTz = 'US/Pacific'
+    NOTE: Given arguments can be given with the normal version: 'US/Eastern'
+    or the shorthand version: 'EST'.
+    '''
+    # Dict of unusual strings of timezones
+    time = {'MST': 'MST7MDT', 'PST': 'PST8PDT', 'CDT': 'CST6CDT'}
+
+    if fromTz in time:
+        fromTz = time[fromTz]
+    if toTz in time:
+        toTz = time[toTz]
 
     # Get that tzinfo shit out of here...
     tzFrom = arrow.now(fromTz).datetime.replace(tzinfo=None)
