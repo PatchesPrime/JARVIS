@@ -58,9 +58,10 @@ async def currentTime(zone=None, *, caller=None):
     USAGE: time EST or US/Eastern
     '''
     if zone:
-        # Edge Case
-        if zone == 'PST':
-            zone = 'US/Pacific'
+        time = {'MST': 'MST7MDT', 'PST': 'PST8PDT', 'CDT': 'CST6CDT'}
+
+        if zone in time:
+            zone = time[zone]
 
         # Get the current time in a specific timezone
         return 'Current time in {} is {}'.format(zone, arrow.now(zone))
