@@ -187,6 +187,29 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
     return ohSnap(addWeatherSub, [target, zipcode], caller)
 
 
+async def delWeatherSub(db, target, zipcode, *, caller=None):
+    '''
+    Add weather alerts to my DB for subscriber 'user'.
+    USAGE: alert_sub test@user 55555
+    '''
+    if target == 'me':
+        target = caller
+
+    same = await getSAMECode(zipcode)  # Get the SAME.
+    same = same.split()[-1]  # Chop it up.
+
+    result = await db.subscribers.update_one(
+        {'user': str(target)},
+        {'$pull': {'same_codes': same}},
+        upsert=True
+    )
+
+    if result.modified_count:
+        return 'Added SAME ({}) to DB and will alert if needed.'.format(same)
+
+    return ohSnap(addWeatherSub, [target, zipcode], caller)
+
+
 async def deleteSubscriber(db, user, *, caller=None):
     '''
     Delete a subscriber from my MongoDB for notable weather alerts.
