@@ -210,6 +210,19 @@ async def delWeatherSub(db, target, zipcode, *, caller=None):
     return ohSnap(addWeatherSub, [target, zipcode], caller)
 
 
+async def listWeatherSub(db, target, *, caller=None):
+    if target == 'me':
+        target = caller
+
+    result = await db.subscribers.find_one(
+        {'user': str(target)},
+        {'same_codes': 1}
+    )
+
+    if result:
+        return 'You\'re subscribed to the follow SAMEs: {}'.format(result)
+
+
 async def deleteSubscriber(db, user, *, caller=None):
     '''
     Delete a subscriber from my MongoDB for notable weather alerts.
