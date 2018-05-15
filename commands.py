@@ -207,7 +207,7 @@ async def delWeatherSub(db, target, zipcode, *, caller=None):
     if result.modified_count:
         return 'Removed SAME ({}) from your Alerts.'.format(same)
 
-    return ohSnap(addWeatherSub, [target, zipcode], caller)
+    return ohSnap(delWeatherSub, [target, zipcode], caller)
 
 
 async def listWeatherSub(db, target, *, caller=None):
