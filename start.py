@@ -33,6 +33,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'time': commands.currentTime,
             'tz': commands.convertTo,
             'salewatch': commands.addSaleWatch,
+            'del_alert': commands.delWeatherSub,
         }
 
         # Get a mongodb client and db
