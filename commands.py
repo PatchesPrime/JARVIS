@@ -211,6 +211,10 @@ async def delWeatherSub(db, target, zipcode, *, caller=None):
 
 
 async def listWeatherSub(db, target, *, caller=None):
+    '''
+    List the weather alert subscriptions for the target 'user'.
+    USAGE: list_alerts test@user
+    '''
     if target == 'me':
         target = caller
 
