@@ -220,7 +220,7 @@ async def listWeatherSub(db, target, *, caller=None):
     )
 
     if result:
-        return 'You\'re subscribed to the follow SAMEs: {}'.format(result)
+        return 'You\'re subscribed to: {}'.format(result['same_codes'])
 
     return ohSnap(listWeatherSub, [target], caller)
 
