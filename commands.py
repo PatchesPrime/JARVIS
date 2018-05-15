@@ -189,8 +189,8 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
 
 async def delWeatherSub(db, target, zipcode, *, caller=None):
     '''
-    Add weather alerts to my DB for subscriber 'user'.
-    USAGE: alert_sub test@user 55555
+    Delete weather alert subscription for subscriber 'user'.
+    USAGE: del_alert test@user 55555
     '''
     if target == 'me':
         target = caller
