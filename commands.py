@@ -222,6 +222,8 @@ async def listWeatherSub(db, target, *, caller=None):
     if result:
         return 'You\'re subscribed to the follow SAMEs: {}'.format(result)
 
+    return ohSnap(listWeatherSub, [target], caller)
+
 
 async def deleteSubscriber(db, user, *, caller=None):
     '''
