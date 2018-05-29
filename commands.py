@@ -175,6 +175,10 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
     same = await getSAMECode(zipcode)  # Get the SAME.
     same = same.split()[-1]  # Chop it up.
 
+    if not await db.subscribers.find_one({'user': str(target)}):
+        logging.debug("addWeatherSub target not a subscriber, adding..")
+        await addSubscriber(db, target, caller=caller)
+
     result = await db.subscribers.update_one(
         {'user': str(target)},
         {'$push': {'same_codes': same}},
