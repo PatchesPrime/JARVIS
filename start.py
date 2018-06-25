@@ -124,7 +124,7 @@ class JARVIS(slixmpp.ClientXMPP):
         # Command processing.
         try:
             # The commands non-admin can run..
-            safeCommands = ('solve', 'help', 'time', 'tz')
+            safeCommands = ('solve', 'help', 'time', 'tz', 'exchange')
 
             # Command logic.
             if await self._isAdmin(msg['from'].bare) or cmd in safeCommands:
