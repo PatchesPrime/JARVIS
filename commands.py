@@ -141,11 +141,12 @@ async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
             rate = response[request]['val']
             convert = float(amount) * float(rate)
 
-            out = 'The rate of {} to {} is {}, with {} {} = {} {}'.format(
-                currFrom, currTo, amount, rate, currFrom, convert, currTo
+            out = (
+                f'The rate of {currFrom} to {currTo} is {rate}',
+                f', with {amount}{currFrom.upper()} = {convert}{currTo.upper()}'
             )
 
-            return out
+            return ''.join(out)
 
     return ohSnap(currencyExchange, [currFrom, currTo], caller)
 
