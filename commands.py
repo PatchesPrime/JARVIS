@@ -110,6 +110,13 @@ async def convertTo(fromTz, toTz, *, caller=None):
 
 
 async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
+    '''
+    Get the current exchange rate between two currencies.
+
+    USAGE: exchange FROM TO <amount>
+
+    NOTE: parameters in <> are optional and not required.
+    '''
     # Check if not empty
     if currFrom and currTo:
         currencyF, currencyT = currFrom.upper(), currTo.upper()
