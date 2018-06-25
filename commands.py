@@ -12,7 +12,7 @@ import arrow
 
 async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
     # Must be lowercase for it to work
-    httptype.lower()
+    httptype = httptype.lower()
 
     if payload is not None:
         if type(payload) is not dict:
