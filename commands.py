@@ -139,10 +139,10 @@ async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
             response = await call.json()
 
             rate = response[request]['val']
-            convert = amount * rate
+            convert = float(amount) * float(rate)
 
-            out = 'The exchange rate of {} to {} is, with {} {} = {} {}'.format(
-                currFrom, currTo, amount, currFrom, convert, currTo
+            out = 'The rate of {} to {} is {}, with {} {} = {} {}'.format(
+                currFrom, currTo, amount, rate, currFrom, convert, currTo
             )
 
             return out
