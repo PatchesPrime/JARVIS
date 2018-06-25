@@ -145,7 +145,6 @@ async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
                 currFrom, currTo, amount, currFrom, convert, currTo
             )
 
-            logging.warn(out)
             return out
 
     return ohSnap(currencyExchange, [currFrom, currTo], caller)
