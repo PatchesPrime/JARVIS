@@ -141,12 +141,14 @@ async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
             rate = response[request]['val']
             convert = amount * rate
 
-            out = 'The exchange rate of {} to {} is, with {} {} = {} {}'.format
-            (currFrom, currTo, amount, currFrom, convert, currTo)
+            out = 'The exchange rate of {} to {} is, with {} {} = {} {}'.format(
+                currFrom, currTo, amount, currFrom, convert, currTo
+            )
 
+            logging.warn(out)
             return out
 
-        return ohSnap(currencyExchange, [currFrom, currTo], caller)
+    return ohSnap(currencyExchange, [currFrom, currTo], caller)
 
 
 async def addSaleWatch(db, target, url, price, monthly=False, *, caller=None):
