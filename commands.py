@@ -11,6 +11,9 @@ import arrow
 
 
 async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
+    # Must be lowercase for it to work
+    httptype = httptype.lower()
+
     if payload is not None:
         if type(payload) is not dict:
             raise ValueError('payload argument must be dict')
@@ -104,6 +107,39 @@ async def convertTo(fromTz, toTz, *, caller=None):
     )
 
     return '\n'.join(out)
+
+
+async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
+    # Check if not empty
+    if currFrom and currTo:
+        currencyF, currencyT = currFrom.upper(), currTo.upper()
+        request = currencyF + '_' + currencyT
+
+        tup = ('convert?q=', request, '&compact=y')
+        endpoint = ''.join(tup)
+
+        headers = {
+            'User-Agent': 'JARVIS/v2 (https://github.com/PatchesPrime/JARVIS'
+        }
+
+        url = 'https://free.currencyconverterapi.com/api/v5/'
+
+        # Get API result
+        call = await runREST('get', endpoint, None, url, headers)
+
+        if call.status == 200:
+            # Decode JSON
+            response = await call.json()
+
+            rate = response[request]['val']
+            convert = amount * rate
+
+            out = 'The exchange rate of {} to {} is, with {} {} = {} {}'.format
+            (currFrom, currTo, amount, currFrom, convert, currTo)
+
+            return out
+
+        return ohSnap(currencyExchange, [currFrom, currTo], caller)
 
 
 async def addSaleWatch(db, target, url, price, monthly=False, *, caller=None):

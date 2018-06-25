@@ -32,6 +32,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'add_alert': commands.addWeatherSub,
             'time': commands.currentTime,
             'tz': commands.convertTo,
+            'exchange': commands.currencyExchange,
             'salewatch': commands.addSaleWatch,
             'del_alert': commands.delWeatherSub,
             'list_alerts': commands.listWeatherSub,
