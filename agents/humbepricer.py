@@ -26,10 +26,12 @@ async def humbleScrape(game_name):
 
         for line in page_src.splitlines():
             # So...sometimes this string isn't in the page? What?
-            if 'products_json: [{' in line:
+            if 'products_json' in line: #: [{' in line:
                 # Game data, there is only ever 1
                 line = line.lstrip()
-                game = json.loads(line[15:-1])[0]
+
+                # Fight me about it.
+                game = json.loads(line[line.find('[{'):-1])[0]
 
                 # We're done.
                 return game
@@ -50,6 +52,7 @@ async def agent(db, *, freq=timedelta(hours=5)):
                     logging.warn('Timed out during humblepricer!')
                     continue
 
+                logging.warn(check)
                 price, wanted = check['current_price'][0], watching['price']
 
                 if watching['discount']:
