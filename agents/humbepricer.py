@@ -52,7 +52,7 @@ async def agent(db, *, freq=timedelta(hours=5)):
                     logging.warn('Timed out during humblepricer!')
                     continue
 
-                logging.warn(check)
+                logging.debug('humbleScrape() returned {}'.format(check))
                 price, wanted = check['current_price'][0], watching['price']
 
                 if watching['discount']:
