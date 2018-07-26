@@ -25,7 +25,7 @@ async def humbleScrape():
 
         for line in page_src.splitlines():
             # So...sometimes this string isn't in the page? What?
-            if 'page: {"strings"' in line:
+            if '"page": {' in line:
                 # Chop off leading whitespace.
                 line = line.lstrip()
 
