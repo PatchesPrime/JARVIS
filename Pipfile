@@ -1,11 +1,8 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 
-
 [packages]
-
 slixmpp = "*"
 msgpack-python = "*"
 aiohttp = "*"
@@ -13,11 +10,8 @@ motor = "*"
 sympy = "*"
 arrow = "*"
 
-
 [dev-packages]
-
 jedi = "*"
-rope = "*"
 importmagic = "*"
 "autopep8" = "*"
 "flake8" = "*"
