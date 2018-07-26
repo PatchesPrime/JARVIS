@@ -14,6 +14,9 @@ async def humbleScrape():
     '''
     url = 'https://www.humblebundle.com/store'
 
+    # What string do we look for?
+    jsonIdentifier = '"page": {'
+
     async with aiohttp.ClientSession() as session:
         # There have been no complaints, but this will help them find me if
         # they have some.
@@ -25,12 +28,12 @@ async def humbleScrape():
 
         for line in page_src.splitlines():
             # So...sometimes this string isn't in the page? What?
-            if '"page": {' in line:
+            if jsonIdentifier in line:
                 # Chop off leading whitespace.
                 line = line.lstrip()
 
                 # Chop off 'page: ', which is 6 characters.
-                shop = json.loads(line[6:-1])['entity_lookup_dict']
+                shop = json.loads(line[8:-1])['entity_lookup_dict']
 
                 # We're done here, get out of loop.
                 break
