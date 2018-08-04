@@ -82,6 +82,8 @@ async def agent(db, *, freq=timedelta(minutes=5)):
                 for alert in check:
                     if alert['id'] in known:
                         continue
+
+                    await db.warframe.insert_one(alert)
                     msg.append('{item} - Expires: {expires}'.format(**alert))
 
                 if len(msg) > 1:
