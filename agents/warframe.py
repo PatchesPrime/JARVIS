@@ -69,10 +69,12 @@ async def agent(db, *, freq=timedelta(minutes=5)):
         qfilter = {'user': 1, 'warframe': 1}
         async for sub in db.subscribers.find(query, qfilter):
             if len(check) > 0:
-                msg = (
-                    'Test Message, Please Ignore!',
-                    check
-                )
+                msg = [
+                    'Warframe Alert!'
+                ]
+
+                for alert in check:
+                    msg.append('{item} - Expires: {expires}'.format(**alert))
 
                 # Payload.
                 payload = {
