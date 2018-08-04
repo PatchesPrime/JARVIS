@@ -12,7 +12,12 @@ async def get_warframe():
     url = "http://content.warframe.com/dynamic/worldState.php"
 
     # Watched items.
-    watched = ['Alertium', 'OrokinCatalyst', 'OrokinReactor']
+    watched = {
+        'Alertium': 'Nitain Extract',
+        'OrokinCatalyst': 'OrokinCatalyst',
+        'OrokinReactor': 'OrokinReactor',
+        'Eventium': 'Synthula'
+    }
 
     async with aiohttp.ClientSession() as session:
         headers = {
@@ -37,11 +42,13 @@ async def get_warframe():
                 field = mission_rewards.get('countedItems')
                 if field:
                     for item in field:
-                        if any(thing in item['ItemType'] for thing in watched):
+                        item_name = item['ItemType'].split('/')[-1]
+                        if any(thing in item['ItemType'] for thing in watched.keys()):
                             results.append(
                                 {
                                     'id': alert_id,
-                                    'item': item['ItemType'].split('/')[-1],
+                                    'item': item_name,
+                                    'name': watched[item_name],
                                     'expires': expires
                                 }
                             )
@@ -51,11 +58,13 @@ async def get_warframe():
                         continue
 
                     for item in mission_rewards['items']:
-                        if any(thing in item for thing in watched):
+                        item_name = item.split('/')[-1]
+                        if any(thing in item for thing in watched.keys()):
                             results.append(
                                 {
                                     'id': alert_id,
-                                    'item': item.split('/')[-1],
+                                    'item': item_name,
+                                    'name': watched[item_name],
                                     'expires': expires
                                 }
                             )
@@ -66,15 +75,14 @@ async def get_warframe():
 async def agent(db, *, freq=timedelta(minutes=5)):
     while True:
         logging.debug('Checking Warframe Alerts..')
+        # Known IDs
+        known = [x['id'] async for x in db.warframe.find()]
         check = await get_warframe()
 
         query = {'warframe': {'$exists': True}}
         qfilter = {'user': 1, 'warframe': 1}
         async for sub in db.subscribers.find(query, qfilter):
             if len(check) > 0:
-                # Known IDs
-                known = [x['id'] async for x in db.warframe.find()]
-
                 msg = [
                     'Warframe Alert!'
                 ]
@@ -82,9 +90,7 @@ async def agent(db, *, freq=timedelta(minutes=5)):
                 for alert in check:
                     if alert['id'] in known:
                         continue
-
-                    await db.warframe.insert_one(alert)
-                    msg.append('{item} - Expires: {expires}'.format(**alert))
+                    msg.append('{name} - Expires: {expires}'.format(**alert))
 
                 if len(msg) > 1:
                     # Payload.
@@ -98,6 +104,9 @@ async def agent(db, *, freq=timedelta(minutes=5)):
                     sock = create_connection(('192.168.1.200', 8888))
                     sock.send(msgpack.packb(payload))
                     sock.close()
+
+        # Add them to the list.
+        await db.warframe.insert(check)
 
         # Reeeeee, 79 characters.
         logging.debug(
