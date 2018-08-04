@@ -16,7 +16,7 @@ async def get_warframe():
         'Alertium': 'Nitain Extract',
         'OrokinCatalyst': 'OrokinCatalyst',
         'OrokinReactor': 'OrokinReactor',
-        'Eventium': 'Synthula'
+        # 'Eventium': 'Synthula',
     }
 
     async with aiohttp.ClientSession() as session:
