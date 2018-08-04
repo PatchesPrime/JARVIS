@@ -75,24 +75,29 @@ async def get_warframe():
 async def agent(db, *, freq=timedelta(minutes=5)):
     while True:
         logging.debug('Checking Warframe Alerts..')
-        # Known IDs
-        known = [x['id'] async for x in db.warframe.find()]
         check = await get_warframe()
 
-        query = {'warframe': {'$exists': True}}
-        qfilter = {'user': 1, 'warframe': 1}
-        async for sub in db.subscribers.find(query, qfilter):
-            if len(check) > 0:
-                msg = [
-                    'Warframe Alert!'
-                ]
+        if check:
+            query = {'warframe': {'$exists': True}}
+            qfilter = {'user': 1, 'warframe': 1}
 
-                for alert in check:
-                    if alert['id'] in known:
-                        continue
-                    msg.append('{name} - Expires: {expires}'.format(**alert))
+            # Message prefix.
+            msg = [
+                'Warframe Alert!'
+            ]
 
-                if len(msg) > 1:
+            # Alert processing.
+            for alert in check:
+                if await db.warframe.find_one({'item': alert['item']}):
+                    continue
+
+                # If it's new, get the message ready.
+                msg.append('{name} - Expires: {expires}'.format(**alert))
+                await db.warframe.insert(alert)
+
+            # Message sending.
+            async for sub in db.subscribers.find(query, qfilter):
+                if len(msg) > 1 and sub['warframe'] is True:
                     # Payload.
                     payload = {
                         'to': sub['user'],
@@ -104,9 +109,6 @@ async def agent(db, *, freq=timedelta(minutes=5)):
                     sock = create_connection(('192.168.1.200', 8888))
                     sock.send(msgpack.packb(payload))
                     sock.close()
-
-        # Add them to the list.
-        await db.warframe.insert(check)
 
         # Reeeeee, 79 characters.
         logging.debug(
