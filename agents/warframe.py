@@ -26,6 +26,7 @@ async def get_warframe():
             for alert in data['Alerts']:
                 # Shorthand
                 mission_rewards = alert['MissionInfo']['missionReward']
+                alert_id = alert['_id']['$oid']
 
                 # Split into two lines, PEP8 pls.
                 expires = int(alert['Expiry']['$date']['$numberLong']) / 1000
@@ -39,6 +40,7 @@ async def get_warframe():
                         if any(thing in item['ItemType'] for thing in watched):
                             results.append(
                                 {
+                                    'id': alert_id,
                                     'item': item['ItemType'].split('/')[-1],
                                     'expires': expires
                                 }
@@ -52,6 +54,7 @@ async def get_warframe():
                         if any(thing in item for thing in watched):
                             results.append(
                                 {
+                                    'id': alert_id,
                                     'item': item.split('/')[-1],
                                     'expires': expires
                                 }
