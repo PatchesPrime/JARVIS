@@ -72,24 +72,30 @@ async def agent(db, *, freq=timedelta(minutes=5)):
         qfilter = {'user': 1, 'warframe': 1}
         async for sub in db.subscribers.find(query, qfilter):
             if len(check) > 0:
+                # Known IDs
+                known = [x['id'] async for x in db.warframe.find()]
+
                 msg = [
                     'Warframe Alert!'
                 ]
 
                 for alert in check:
+                    if alert['id'] in known:
+                        continue
                     msg.append('{item} - Expires: {expires}'.format(**alert))
 
-                # Payload.
-                payload = {
-                    'to': sub['user'],
-                    'msg': '\n'.join(msg),
-                    'type': 'warframe',
-                }
+                if len(msg) > 1:
+                    # Payload.
+                    payload = {
+                        'to': sub['user'],
+                        'msg': '\n'.join(msg),
+                        'type': 'warframe',
+                    }
 
-                # Pass the payload to Jarvis.
-                sock = create_connection(('192.168.1.200', 8888))
-                sock.send(msgpack.packb(payload))
-                sock.close()
+                    # Pass the payload to Jarvis.
+                    sock = create_connection(('192.168.1.200', 8888))
+                    sock.send(msgpack.packb(payload))
+                    sock.close()
 
         # Reeeeee, 79 characters.
         logging.debug(
