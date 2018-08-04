@@ -65,7 +65,7 @@ async def agent(db, *, freq=timedelta(minutes=5)):
         logging.debug('Checking Warframe Alerts..')
         check = await get_warframe()
 
-        query = {'warframe': {'$exits': True}}
+        query = {'warframe': {'$exists': True}}
         qfilter = {'user': 1, 'warframe': 1}
         async for sub in db.subscribers.find(query, qfilter):
             if len(check) > 0:
