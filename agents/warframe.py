@@ -17,6 +17,7 @@ async def get_warframe():
         'OrokinCatalyst': 'OrokinCatalyst',
         'OrokinReactor': 'OrokinReactor',
         # 'Eventium': 'Synthula',
+        # 'EnemyArmorReductionAuraMod': 'Corrosive Projection',
     }
 
     async with aiohttp.ClientSession() as session:
@@ -88,7 +89,8 @@ async def agent(db, *, freq=timedelta(minutes=5)):
 
             # Alert processing.
             for alert in check:
-                if await db.warframe.find_one({'item': alert['item']}):
+                pattern = {'item': alert['item'], 'id': alert['id']}
+                if await db.warframe.find_one(pattern):
                     continue
 
                 # If it's new, get the message ready.
