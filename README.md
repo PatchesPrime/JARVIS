@@ -8,6 +8,9 @@ Internally he uses a MongoDB server for dealing with data persistence. One day I
 ### Features
    * Alert of active weather alerts directly from NWS (filtered by severity).
    * Poll the GitHub API for monitoring for new commits.
+   * Notify of free games from HumbleBundle.
+   * Watch for sales of specific titles of a specific criteria from HumbleBundle.
+   * Notify those who ask of the more important Warframe items only received from in-game alerts.
    * Manage user accounts on the XMPP server we own.
 
 
