@@ -14,8 +14,8 @@ async def get_warframe():
     # Watched items.
     watched = {
         'Alertium': 'Nitain Extract',
-        'OrokinCatalyst': 'OrokinCatalyst',
-        'OrokinReactor': 'OrokinReactor',
+        'OrokinCatalystBlueprint': 'Orokin Catalyst Blueprint',
+        'OrokinReactorBlueprint': 'Orokin Reactor Blueprint',
         # 'Eventium': 'Synthula',
         # 'EnemyArmorReductionAuraMod': 'Corrosive Projection',
     }
