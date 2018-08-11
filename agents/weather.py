@@ -50,7 +50,8 @@ async def getWeather(same):
 async def agent(db, *, freq=timedelta(minutes=5)):
     while True:
         logging.debug('Checking the weather..')
-        async for sub in db.subscribers.find({}):
+        qfilter = {'user': 1, 'same_codes': 1}
+        async for sub in db.subscribers.find({}, qfilter):
             for location in sub['same_codes']:
                 data = await getWeather(location)
 

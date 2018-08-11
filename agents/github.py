@@ -40,7 +40,8 @@ async def getCommits(user, repo):
 async def agent(db, *, freq=timedelta(hours=12)):
     while True:
         logging.debug('Checking for new commits to known repositories..')
-        async for sub in db.subscribers.find({}):
+        qfilter = {'user': 1, 'git': 1}
+        async for sub in db.subscribers.find({}, qfilter):
             for info in sub['git']:
                 logging.debug('GIT: {}'.format(info))
 
