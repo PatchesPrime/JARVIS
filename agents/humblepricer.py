@@ -62,7 +62,7 @@ async def agent(db, *, freq=timedelta(hours=5)):
 
                     # Remove the entry from the DB. Bad practice? Yep.
                     query.update({'user': sub['user']})
-                    result = await db.subscribers.update(
+                    result = await db.subscribers.update_one(
                         query, {'$pull':
                                 {'sales_watch':
                                  {'name': check['human_url']}}}

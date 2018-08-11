@@ -95,7 +95,7 @@ async def agent(db, *, freq=timedelta(minutes=5)):
 
                 # If it's new, get the message ready.
                 msg.append('{name} - Expires: {expires}'.format(**alert))
-                await db.warframe.insert(alert)
+                await db.warframe.insert_one(alert)
 
             # Message sending.
             async for sub in db.subscribers.find(query, qfilter):

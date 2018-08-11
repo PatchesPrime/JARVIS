@@ -71,7 +71,7 @@ async def agent(db, *, freq=timedelta(hours=12)):
                             # The things I do for 79 characters.
                             digest.append(msg)
 
-                        result = await db.git.update(
+                        result = await db.git.update_one(
                             {'id': '{user}/{repo}'.format(**info)},
                             {'$push': {'commits': commit}},
                             upsert=True
