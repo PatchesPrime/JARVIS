@@ -3,7 +3,6 @@ import logging
 import json
 import msgpack
 import asyncio
-from os.path import expanduser
 from concurrent.futures import ThreadPoolExecutor
 import config
 from sympy import solve, simplify, SympifyError
@@ -217,12 +216,7 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
     if target == 'me':
         target = caller
 
-    same = await getSAMECode(zipcode)  # Get the SAME.
-    same = same.split()[-1]  # Chop it up.
-
-    # Was there a problem with the zipcode? Report error, log it.
-    if same == "zipcode..":
-        return ohSnap(addWeatherSub, [target, zipcode], caller)
+    state = await db.state_data.find_one({'zip': zipcode})
 
     if not await db.subscribers.find_one({'user': str(target)}):
         logging.debug("addWeatherSub target not a subscriber, adding..")
@@ -230,12 +224,12 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
 
     result = await db.subscribers.update_one(
         {'user': str(target)},
-        {'$push': {'same_codes': same}},
+        {'$push': {'same_codes': state['same']}},
         upsert=True
     )
 
     if result.modified_count:
-        return 'Added SAME ({}) to DB and will alert if needed.'.format(same)
+        return 'Added SAME ({}) to DB and will alert if needed.'.format(state['same'])
 
     return ohSnap(addWeatherSub, [target, zipcode], caller)
 
@@ -248,17 +242,16 @@ async def delWeatherSub(db, target, zipcode, *, caller=None):
     if target == 'me':
         target = caller
 
-    same = await getSAMECode(zipcode)  # Get the SAME.
-    same = same.split()[-1]  # Chop it up.
+    state = await db.state_data.find_one({'zip': zipcode})
 
     result = await db.subscribers.update_one(
         {'user': str(target)},
-        {'$pull': {'same_codes': same}},
+        {'$pull': {'same_codes': state['same']}},
         upsert=True
     )
 
     if result.modified_count:
-        return 'Removed SAME ({}) from your Alerts.'.format(same)
+        return 'Removed SAME ({}) from your Alerts.'.format(state['same'])
 
     return ohSnap(delWeatherSub, [target, zipcode], caller)
 
@@ -468,110 +461,6 @@ async def solveMath(expr, *, caller=None):
         return 'Here is my solution: {}'.format(result)
 
     return 'I couldn\'t solve the problem..sorry :('
-
-
-async def getSAMECode(place, *, caller=None):
-    '''
-    Get the SAME code for a given place. Tries to make it work
-    yet probably wont.
-
-    USAGE: same zipcodeHere
-    '''
-    # We need this information. They technically run in another thread.
-    codes = await readFile(expanduser('~/projects/JARVIS/agents/same.codes'))
-
-    async with aiohttp.ClientSession() as session:
-        # We need to do this first.
-        geocodeAPI = 'https://maps.googleapis.com/maps/api/geocode/json'
-
-        # Build the payload and request it..
-        payload = {'address': place, 'key': config.geocode_key}
-        async with session.get(geocodeAPI, params=payload) as response:
-            request = await response.json()
-
-        try:
-            # THERE WILL BE ONLY 79 CHARACTERS
-            comps = request['results'][0]['address_components']
-        except IndexError as e:
-            # Occasionally the Google Geocode API randomly doesn't
-            # return anything. One day I'll know why.
-            logging.warn('IndexError: {}'.format(e))
-            message = ('Something went wrong, likely googles fault',
-                       'or perhaps invalid zipcode..')
-            return ' '.join(message)
-
-        # Forgive me padre for I have sinned.
-        # types = {y for x in comps for y in x['types']}
-        types = set()
-        for comp in comps:
-            for attrib in comp['types']:
-                types.add(attrib)
-
-                # I baby this loop.
-                await asyncio.sleep(0)
-
-        # PEP8 pls
-        if 'administrative_area_level_2' in types:
-            for com in comps:
-                if 'administrative_area_level_2' in com['types']:
-                    county = com['long_name'][:-7]
-
-                elif 'administrative_area_level_1' in com['types']:
-                    state = ', {}'.format(com['short_name'])
-
-                # More babying of loops.
-                await asyncio.sleep(0)
-
-            return 'Requested code, sir: {}'.format(codes[county + state])
-
-        else:
-            for com in comps:
-                if 'locality' in com['types']:
-                    city = com['long_name']
-                elif 'administrative_area_level_1' in com['types']:
-                    state = ', {}'.format(com['short_name'])
-
-                # waaaahh
-                await asyncio.sleep(0)
-
-            # Not a fan of excessive code duplication, but
-            # it'll be better than recursion.
-            try:
-                payload['address'] = city + state
-            except UnboundLocalError:
-                return 'We failed..Are you sure it\'s a valid zipcode?'
-
-            async with session.get(geocodeAPI, params=payload) as response:
-                request = await response.json()
-
-                try:
-                    comp = request['results'][0]['address_components']
-                except IndexError as e:
-                    logging.warn('IndexError: {}'.format(e))
-                    message = ('Something went wrong, likely googles fault',
-                               'or perhaps invalid zipcode..')
-                    return ' '.join(message)
-
-                for com in comp:
-                    if 'administrative_area_level_2' in com['types']:
-                        county = com['long_name'][:-7]
-
-                    elif 'administrative_area_level_1' in com['types']:
-                        state = ', {}'.format(com['short_name'])
-
-                    # 'stop babying the loop' - Koz
-                    await asyncio.sleep(0)
-
-                try:
-                    return 'The code, sir: {}'.format(codes[county + state])
-                except UnboundLocalError:
-                    # We couldn't find the county, sadly.
-                    return ohSnap(
-                        getSAMECode,
-                        [place],
-                        caller,
-                        stacktrace='Couldn\'t get county'
-                    )
 
 
 def ohSnap(func, args, caller, stacktrace=None):
