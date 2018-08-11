@@ -25,7 +25,6 @@ class JARVIS(slixmpp.ClientXMPP):
             'update_user': commands.updateUser,
             'add_sub': commands.addSubscriber,
             'del_sub': commands.deleteSubscriber,
-            'same': commands.getSAMECode,
             'add_git': commands.addGitSub,
             'del_git': commands.delGitSub,
             'solve': commands.solveMath,
