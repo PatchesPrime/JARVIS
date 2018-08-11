@@ -25,7 +25,7 @@ async def get_warframe():
             'User-Agent': 'JARVIS/v2 (https://github.com/PatchesPrime/JARVIS)'
         }
 
-        async with session.get(url, headers=headers, timeout=3) as response:
+        async with session.get(url, headers=headers, timeout=10) as response:
             data = json.loads(await response.text())
 
             results = []
