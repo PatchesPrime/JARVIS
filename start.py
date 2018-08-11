@@ -39,19 +39,13 @@ class JARVIS(slixmpp.ClientXMPP):
         }
 
         # Get a mongodb client and db
-        mongo = motor.motor_asyncio.AsyncIOMotorClient()
-        self.db = mongo.bot
+        client = motor.motor_asyncio.AsyncIOMotorClient()
+        self.db = client.bot
 
         # Simple dictionary to note who is busy.
         self.busy = dict()
 
     async def start(self, event):
-        # This should be awaited. Check commit.
-        await self.db.authenticate(
-            config.mongo_user,
-            config.mongo_pass,
-        )
-
         self.send_presence()
         self.get_roster()
 

@@ -3,7 +3,6 @@ import os
 import logging
 import importlib.util
 import motor.motor_asyncio
-import config
 
 
 # Build a list of functions from the modules in agents folder.
@@ -27,12 +26,8 @@ for name in os.listdir('./agents'):
 
 
 async def main():
-    mongo = motor.motor_asyncio.AsyncIOMotorClient()
-    db = mongo.bot
-    await db.authenticate(
-        config.mongo_user,
-        config.mongo_pass,
-    )
+    client = motor.motor_asyncio.AsyncIOMotorClient()
+    db = client.bot
 
     # Ensure the future of all our agents.
     for f in runners:
