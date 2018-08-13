@@ -191,8 +191,8 @@ async def addSaleWatch(db, target, url, price, monthly=False, *, caller=None):
 
 async def addSubscriber(db, target, admin=False, *, caller=None):
     '''
-    Add a subscriber to my MongoDB for notable weather alerts.
-    USAGE: add_sub user@host
+    Add a subscriber to my database, really only use for adding a 'template'.
+    USAGE: add_sub user@host <admin?>
     '''
     result = await db.subscribers.insert_one(
         {
@@ -211,7 +211,7 @@ async def addSubscriber(db, target, admin=False, *, caller=None):
 async def addWeatherSub(db, target, zipcode, *, caller=None):
     '''
     Add weather alerts to my DB for subscriber 'user'.
-    USAGE: alert_sub test@user 55555
+    USAGE: add_alert test@user 55555
     '''
     if target == 'me':
         target = caller
@@ -277,7 +277,7 @@ async def listWeatherSub(db, target, *, caller=None):
 
 async def deleteSubscriber(db, user, *, caller=None):
     '''
-    Delete a subscriber from my MongoDB for notable weather alerts.
+    Delete a subscriber from my database.
     USAGE: del_sub user@host
     '''
     result = await db.subscribers.delete_one(
@@ -295,9 +295,9 @@ async def deleteSubscriber(db, user, *, caller=None):
 async def addGitSub(db, target, gituser, gitrepo, *, caller=None):
     '''
     Add a subscription to a GitHub git repo to watch for commits.
-    USAGE: gitwatch xmpp_id github_username github_repository
+    USAGE: add_git xmpp_id github_username github_repository
 
-    Example: gitwatch user@example.org PatchesPrime JARVIS
+    Example: add_git user@example.org PatchesPrime JARVIS
     will watch 'PatchesPrime' users 'JARVIS' repo for xmppUser.
 
     NOTE: can accept 'me' as xmpp_id to add for yourself.
@@ -323,9 +323,9 @@ async def delGitSub(db, target, gituser, gitrepo, *, caller=None):
     '''
     Delete a subscription to a GitHub git repo to watch for commits.
 
-    USAGE: delgit github_username github_repository
+    USAGE: del_git github_username github_repository
 
-    Example: delgit user@example.org PatchesPrime JARVIS
+    Example: del_git user@example.org PatchesPrime JARVIS
     NOTE: can accept 'me' as xmpp_id to add for yourself.
     '''
     if target == 'me':
