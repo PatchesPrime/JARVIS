@@ -5,6 +5,7 @@ import logging
 from datetime import timedelta, datetime
 from socket import create_connection
 import msgpack
+from concurrent.futures import TimeoutError
 
 
 async def get_warframe():
@@ -76,7 +77,13 @@ async def get_warframe():
 async def agent(db, *, freq=timedelta(minutes=5)):
     while True:
         logging.debug('Checking Warframe Alerts..')
-        check = await get_warframe()
+
+        try:
+            check = await get_warframe()
+        except TimeoutError as e:
+            logging.error('Warframe agent timed out..resetting.')
+            asyncio.sleep(5)
+            continue
 
         if check:
             query = {'warframe': {'$exists': True}}
