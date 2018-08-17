@@ -201,6 +201,7 @@ async def addSubscriber(db, target, admin=False, *, caller=None):
             'filter': ['Severe', 'Unknown'],
             'admin': bool(admin),
             'git': [],
+            'warframe': False,
         }
     )
 
@@ -220,7 +221,7 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
 
     if not await db.subscribers.find_one({'user': str(target)}):
         logging.debug("addWeatherSub target not a subscriber, adding..")
-        await addSubscriber(db, target, caller=caller)
+        await addSubscriber(db, target, caller=target)
 
     result = await db.subscribers.update_one(
         {'user': str(target)},
@@ -243,6 +244,9 @@ async def delWeatherSub(db, target, zipcode, *, caller=None):
         target = caller
 
     state = await db.state_data.find_one({'zip': zipcode})
+
+    if not await db.subscribers.find_one({'user': str(target)}):
+        return 'Whoops, it appears you\'re not subbed yet!'
 
     result = await db.subscribers.update_one(
         {'user': str(target)},
@@ -305,6 +309,9 @@ async def addGitSub(db, target, gituser, gitrepo, *, caller=None):
     if target == 'me':
         target = caller
 
+    if not await db.subscribers.find_one({'user': str(target)}):
+        await addSubscriber(db, target, caller=target)
+
     result = await db.subscribers.update_one(
         {'user': str(target)},
         {'$push': {'git': {'user': str(gituser), 'repo': str(gitrepo)}}},
@@ -330,6 +337,9 @@ async def delGitSub(db, target, gituser, gitrepo, *, caller=None):
     '''
     if target == 'me':
         target = caller
+
+    if not await db.subscribers.find_one({'user': str(target)}):
+        await addSubscriber(db, target, caller=target)
 
     result = await db.subscribers.update_one(
         {'user': str(target)},
