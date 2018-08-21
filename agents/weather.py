@@ -33,7 +33,7 @@ async def getWeather(same):
                 try:
                     request = json.loads(request)['features']
                 except json.decoder.JSONDecodeError as e:
-                    logging.warn('JSON load failed: {}'.format(e))
+                    logging.warn('Weather JSON load failed: {}'.format(e))
                     return []
 
         except aiohttp.client_exceptions.ClientConnectorError as e:
