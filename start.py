@@ -35,6 +35,7 @@ class JARVIS(slixmpp.ClientXMPP):
             'salewatch': commands.addSaleWatch,
             'del_alert': commands.delWeatherSub,
             'list_alerts': commands.listWeatherSub,
+            'togglewarframe': commands.toggleWarframe,
         }
 
         # Get a mongodb client and db

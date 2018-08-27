@@ -189,6 +189,26 @@ async def addSaleWatch(db, target, url, price, monthly=False, *, caller=None):
     return ohSnap(addSaleWatch, [target, url, price], caller)
 
 
+async def toggleWarframe(db, target, *, caller=None):
+    '''
+    Toggle the status of warframe alerts for a user.
+    USAGE: togglewarframe JID
+    '''
+    if target == 'me':
+        target = caller
+
+    user = await db.subscribers.find_one({'user': str(target)})
+
+    result = await db.subscribers.update_one(
+        {'user': str(target)},
+        {'$set': {'warframe': not user['warframe']}},
+        upsert=True,
+    )
+
+    if result.modified_count:
+        return f'Certainly! I\'ve toggled {target}\'s warframe field.'
+
+
 async def addSubscriber(db, target, admin=False, *, caller=None):
     '''
     Add a subscriber to my database, really only use for adding a 'template'.
