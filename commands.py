@@ -198,15 +198,16 @@ async def toggleWarframe(db, target, *, caller=None):
         target = caller
 
     user = await db.subscribers.find_one({'user': str(target)})
+    status = user['warframe']
 
+    # Flip the status.
     result = await db.subscribers.update_one(
         {'user': str(target)},
-        {'$set': {'warframe': not user['warframe']}},
+        {'$set': {'warframe': not status}},
         upsert=True,
     )
 
     if result.modified_count:
-        status = result['warframe']
         return f'Certainly! Will {target} get alerts? {status}!'
 
 
