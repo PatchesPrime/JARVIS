@@ -208,7 +208,7 @@ async def toggleWarframe(db, target, *, caller=None):
     )
 
     if result.modified_count:
-        return f'Certainly! Will {target} get alerts? {status}!'
+        return f'Certainly! Will {target} get alerts? {not status}!'
 
 
 async def addSubscriber(db, target, admin=False, *, caller=None):
