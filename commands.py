@@ -206,7 +206,8 @@ async def toggleWarframe(db, target, *, caller=None):
     )
 
     if result.modified_count:
-        return f'Certainly! I\'ve toggled {target}\'s warframe field.'
+        status = result['warframe']
+        return f'Certainly! Will {target} get alerts? {status}!'
 
 
 async def addSubscriber(db, target, admin=False, *, caller=None):
