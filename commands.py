@@ -259,7 +259,7 @@ async def addWeatherSub(db, target, zipcode, *, caller=None):
 
 async def delWeatherSub(db, target, zipcode, *, caller=None):
     '''
-    Delete weather alert subscription for subscriber 'user'.
+    Delete weather alert subscription for 'user'.
     USAGE: del_alert test@user 55555
     '''
     if target == 'me':
@@ -325,8 +325,6 @@ async def addGitSub(db, target, gituser, gitrepo, *, caller=None):
 
     Example: add_git user@example.org PatchesPrime JARVIS
     will watch 'PatchesPrime' users 'JARVIS' repo for xmppUser.
-
-    NOTE: can accept 'me' as xmpp_id to add for yourself.
     '''
     if target == 'me':
         target = caller
@@ -355,7 +353,6 @@ async def delGitSub(db, target, gituser, gitrepo, *, caller=None):
     USAGE: del_git github_username github_repository
 
     Example: del_git user@example.org PatchesPrime JARVIS
-    NOTE: can accept 'me' as xmpp_id to add for yourself.
     '''
     if target == 'me':
         target = caller

@@ -141,7 +141,7 @@ class JARVIS(slixmpp.ClientXMPP):
 
         except (KeyError, SyntaxError, TypeError) as e:
             if type(e).__name__ == 'KeyError':
-                end = 'My available commands:\n'
+                end = 'My available commands (try \'me\' as target!):\n'
                 for k, v in self.commands.items():
                     end += '{0}\n{1}\n'.format(k, v.__doc__)
 
