@@ -41,11 +41,19 @@ async def runREST(httptype, endpoint, payload=None, url=None, headers=None):
             if payload is None:
                 req = getattr(session, httptype)
                 async with req(url, headers=headers) as response:
-                    return response
+                    return {
+                        'status': response.status,
+                        'text': await response.text(),
+                        'obj': response,
+                    }
             else:
                 req = getattr(session, httptype)
                 async with req(url, headers=headers, data=json.dumps(payload)) as response:
-                    return response
+                    return {
+                        'status': response.status,
+                        'text': await response.text(),
+                        'obj': response,
+                    }
 
         except AttributeError as e:
             logging.error('Failed to run REST API request..{}'.format(e))
@@ -133,9 +141,9 @@ async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
         # Get API result
         call = await runREST('get', endpoint, None, url, headers)
 
-        if call.status == 200:
+        if call['status'] == 200:
             # Decode JSON
-            response = await call.json()
+            response = json.loads(call['text'])
 
             rate = response[request]['val']
             convert = float(amount) * float(rate)
@@ -387,7 +395,7 @@ async def registerUser(target, pwd, *, caller=None):
 
     req = await runREST('post', 'users', payload=payload)
 
-    if req.status == 201:
+    if req['status'] == 201:
         return 'User {} has been registered'.format(target)
 
     # Fail case, throw predictable exception.
@@ -403,7 +411,7 @@ async def deleteUser(target, *, caller=None):
     endpoint = 'users/{0}'.format(target)
     req = await runREST('delete', endpoint)
 
-    if req.status == 200:
+    if req['status'] == 200:
         return 'Destroyed \'{}\' user credentials'.format(target)
 
     return ohSnap(deleteUser, [target], caller)
@@ -429,7 +437,7 @@ async def updateUser(target, *payload, caller=None):
     # Trust that it's JSON.
     req = await runREST('put', api, payload=payload)
 
-    if req.status == 200:
+    if req['status'] == 200:
         return '{}\'s credentials have been updated.'.format(target)
 
     return ohSnap(updateUser, [target, payload], caller)
