@@ -128,7 +128,7 @@ async def currencyExchange(currFrom, currTo, amount=1, *, caller=None):
             'User-Agent': 'JARVIS/v2 (https://github.com/PatchesPrime/JARVIS'
         }
 
-        url = 'https://free.currencyconverterapi.com/api/v5/'
+        url = 'https://free.currencyconverterapi.com/api/v6/'
 
         # Get API result
         call = await runREST('get', endpoint, None, url, headers)
