@@ -14,7 +14,7 @@ async def get_warframe():
 
     # Watched items.
     watched = {
-        'Alertium': 'Nitain Extract',
+        # 'Alertium': 'Nitain Extract',
         'OrokinCatalystBlueprint': 'Orokin Catalyst Blueprint',
         'OrokinReactorBlueprint': 'Orokin Reactor Blueprint',
         # 'Eventium': 'Synthula',
@@ -80,9 +80,9 @@ async def agent(db, *, freq=timedelta(minutes=5)):
 
         try:
             check = await get_warframe()
-        except TimeoutError as e:
+        except TimeoutError:
             logging.error('Warframe agent timed out..resetting.')
-            asyncio.sleep(5)
+            await asyncio.sleep(5)
             continue
 
         if check:
@@ -109,6 +109,9 @@ async def agent(db, *, freq=timedelta(minutes=5)):
                 if len(msg) > 1 and sub['warframe'] is True:
                     # Payload.
                     payload = {
+                        # TODO We should be able to pass a list of users
+                        # rather than do it one at a time. It would reduce log
+                        # entries and just be "cleaner" in my opinion.
                         'to': sub['user'],
                         'msg': '\n'.join(msg),
                         'type': 'warframe',
