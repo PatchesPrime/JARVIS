@@ -5,10 +5,11 @@ verify_ssl = true
 [packages]
 slixmpp = "*"
 msgpack-python = "*"
-aiohttp = "*"
+aiohttp = "~=3.4.4"
 motor = "*"
 sympy = "*"
 arrow = "*"
+msgpack = "*"
 
 [dev-packages]
 jedi = "*"
